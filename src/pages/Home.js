@@ -4,6 +4,7 @@ import '../styles/Home.css';
 
 // Import architecture-specific section components
 import HeroSection from '../components/HeroSection';
+import About from '../components/About';
 import FeaturedProjects from '../components/FeaturedProjects';
 import StudioPhilosophy from '../components/StudioPhilosophy';
 import DesignProcess from '../components/DesignProcess';
@@ -25,6 +26,9 @@ function Home() {
       
       {/* Hero Section with full-screen architectural imagery */}
       <HeroSection />
+
+      { }
+      <About/>
       
      
     </div>
