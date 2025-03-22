@@ -1,0 +1,128 @@
+/* src/styles/HomeStyles.css */
+
+.home-page {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  .intro,
+  .services,
+  .call-to-action {
+    padding: 60px 20px;
+    text-align: center;
+  }
+  
+  .intro h2,
+  .services h2,
+  .call-to-action h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+    color: #333;
+    font-weight: 600;
+  }
+  
+  .intro p,
+  .services p {
+    font-size: 18px;
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 30px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .service-list {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 40px;
+  }
+  
+  .service-item {
+    background-color: #f9f9f9;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    width: 280px;
+  }
+  
+  .service-item:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+  
+  .service-item h3 {
+    font-size: 24px;
+    margin-bottom: 15px;
+    color: #333;
+  }
+  
+  .service-item p {
+    color: #555;
+  }
+  
+  .call-to-action {
+    background-color: #007bff;
+    color: #fff;
+    padding: 60px 20px;
+    margin-top: 60px;
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .call-to-action h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+  }
+  
+  .call-to-action p {
+    font-size: 18px;
+    color: #dcdcdc;
+    line-height: 1.6;
+    margin-bottom: 40px;
+  }
+  
+  .call-to-action button {
+    background-color: #fff;
+    color: #007bff;
+    font-size: 18px;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+  }
+  
+  .call-to-action button:hover {
+    background-color: #0056b3;
+    color: #fff;
+    transform: scale(1.05);
+  }
+  
+  /* Responsive Styles */
+  @media screen and (max-width: 768px) {
+    .service-list {
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    .service-item {
+      width: 90%;
+      margin-bottom: 20px;
+    }
+  
+    .intro h2,
+    .services h2,
+    .call-to-action h2 {
+      font-size: 28px;
+    }
+  
+    .call-to-action button {
+      font-size: 16px;
+    }
+  }
+  

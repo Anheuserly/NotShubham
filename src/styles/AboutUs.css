@@ -1,0 +1,112 @@
+/* src/components/AboutUs.css */
+
+/* Section Styles */
+.about-us {
+    background: #f4f7f6;
+    padding: 50px 0;
+    font-family: 'Arial', sans-serif;
+  }
+  
+  .container {
+    width: 80%;
+    margin: 0 auto;
+    text-align: center;
+  }
+  
+  .section-title {
+    font-size: 36px;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 20px;
+  }
+  
+  .intro-text {
+    font-size: 18px;
+    color: #7f8c8d;
+    line-height: 1.6;
+    max-width: 800px;
+    margin: 0 auto 30px;
+  }
+  
+  /* Team Section */
+  .team {
+    margin-top: 40px;
+  }
+  
+  .team-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 20px;
+  }
+  
+  .team-members {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+  }
+  
+  .team-member {
+    background: #ffffff;
+    padding: 20px;
+    width: 250px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+  
+  .team-member-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: #2c3e50;
+    margin: 0 auto 15px;
+  }
+  
+  .team-member h4 {
+    font-size: 20px;
+    color: #34495e;
+    margin-bottom: 5px;
+  }
+  
+  .team-member p {
+    color: #7f8c8d;
+    font-size: 14px;
+  }
+  
+  /* Why Choose Us Section */
+  .why-choose-us {
+    margin-top: 50px;
+    text-align: left;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .why-choose-us h3 {
+    font-size: 24px;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 15px;
+  }
+  
+  .benefits-list {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .benefits-list li {
+    font-size: 18px;
+    color: #34495e;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  
+  .benefits-list li:before {
+    content: '\2022';
+    color: #e74c3c;
+    font-size: 24px;
+    position: absolute;
+    left: -25px;
+    top: 0;
+  }
+  

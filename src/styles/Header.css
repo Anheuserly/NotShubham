@@ -1,34 +1,305 @@
-/* Header Styles */
+/* General Header Styles */
 .header {
-    background-color: #222;
-    color: #fff;
-    padding: 15px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  background-color: white;
+  color: black;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 15px 30px;
+  transition: all 0.3s ease;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.header.hidden {
+  transform: translateY(-100%); /* Move header out of view */
+}
+
+.header.visible {
+  transform: translateY(0); /* Move header into view */
+}
+
+.main-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+/* Navigation Bar */
+.nav-header {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0 20px;
+  justify-content: space-between; /* Ensure space between elements */
+}
+
+/* Logo */
+.logo img {
+  height: 50px;
+  margin-right: 30px; /* Increased space to the right of the logo */
+  transition: transform 0.3s ease;
+}
+
+.logo img:hover {
+  transform: scale(1.05);
+}
+
+/* Desktop Navigation */
+.nav-links-desktop {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+}
+
+.nav-links-desktop li {
+  margin: 0 15px; /* Increased space between links */
+  position: relative;
+}
+
+.nav-links-desktop a {
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #333;
+  transition: all 0.3s ease-in-out;
+  padding: 5px 0;
+  position: relative;
+}
+
+.nav-links-desktop a::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: 0;
+  left: 0;
+  background-color: #ff6347;
+  transition: width 0.3s ease;
+}
+
+.nav-links-desktop a:hover {
+  color: #ff6347;
+}
+
+.nav-links-desktop a:hover::after {
+  width: 100%;
+}
+
+.nav-links-desktop a.active {
+  color: #ff6347;
+}
+
+.nav-links-desktop a.active::after {
+  width: 100%;
+  background-color: #ff6347;
+}
+
+/* Right side container for brand name and hamburger */
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+/* Brand Name next to Hamburger */
+.brand-name {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: #333;
+  margin-right: 20px;
+  text-transform: uppercase;
+  display: block; /* Ensure it's always visible */
+}
+
+/* Hamburger Menu */
+.menu-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.menu-toggle:hover {
+  transform: scale(1.1);
+}
+
+.hamburger {
+  display: block;
+  width: 30px;
+  height: 2px;
+  background: #333;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.hamburger::before,
+.hamburger::after {
+  content: "";
+  position: absolute;
+  width: 30px;
+  height: 2px;
+  background: #333;
+  transition: all 0.3s ease;
+}
+
+.hamburger::before {
+  top: -8px;
+}
+
+.hamburger::after {
+  top: 8px;
+}
+
+.hamburger.active {
+  background: transparent;
+}
+
+.hamburger.active::before {
+  transform: rotate(45deg);
+  top: 0;
+}
+
+.hamburger.active::after {
+  transform: rotate(-45deg);
+  top: 0;
+}
+
+/* Sidebar Menu */
+.side-menu {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 300px;
+  height: 100vh;
+  background: white;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+  transition: right 0.4s ease-in-out;
+  padding-top: 80px;
+  z-index: 1001;
+}
+
+.side-menu.open {
+  right: 0;
+}
+
+.close-menu {
+  position: absolute;
+  top: 25px;
+  right: 25px;
+  font-size: 28px;
+  border: none;
+  background: #f5f5f5;
+  cursor: pointer;
+  color: #333;
+  transition: all 0.3s ease;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.close-menu:hover {
+  color: #ff6347;
+  background-color: #f0f0f0;
+  transform: scale(1.1);
+}
+
+.nav-links-mobile {
+  list-style: none;
+  padding: 20px;
+}
+
+.nav-links-mobile li {
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.nav-links-mobile a {
+  text-decoration: none;
+  font-size: 18px;
+  color: #333;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: color 0.3s ease-in-out;
+  padding: 5px 0;
+  position: relative;
+  display: inline-block;
+}
+
+.nav-links-mobile a::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: 0;
+  left: 0;
+  background-color: #ff6347;
+  transition: width 0.3s ease;
+}
+
+.nav-links-mobile a:hover {
+  color: #ff6347;
+}
+
+.nav-links-mobile a:hover::after {
+  width: 100%;
+}
+
+.nav-links-mobile a.active {
+  color: #ff6347;
+}
+
+.nav-links-mobile a.active::after {
+  width: 100%;
+  background-color: #ff6347;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 992px) {
+  .nav-links-desktop {
+    display: none; /* Hide desktop nav on mobile */
+  }
+}
+
+/* Remove this media query to keep brand name visible on all screen sizes */
+/*
+@media (min-width: 993px) {
+  .brand-name {
+    display: none;
+  }
+}
+*/
+
+@media (max-width: 768px) {
+  .hamburger {
+    width: 25px;
+  }
+
+  .nav-header {
+    padding: 0 10px;
   }
   
-  .logo h1 {
-    font-size: 24px;
+  .header {
+    padding: 12px 20px;
   }
   
-  nav ul {
-    list-style: none;
-    display: flex;
+  .brand-name {
+    font-size: 16px;
+    margin-right: 15px;
   }
-  
-  nav ul li {
-    margin: 0 15px;
-  }
-  
-  nav ul li a {
-    color: #fff;
-    text-decoration: none;
-    font-size: 18px;
-    transition: color 0.3s ease-in-out;
-  }
-  
-  nav ul li a:hover {
-    color: #f39c12;
-  }
-  
+}

@@ -1,0 +1,49 @@
+/* Container for the Clients section */
+.clients-container {
+    padding: 50px 20px;
+    text-align: center;
+    background-color: #f8f8f8; /* Light background for contrast */
+  }
+  
+  /* Heading for Clients section */
+  .clients-container h1 {
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 30px;
+  }
+  
+  /* Simple list layout for client names */
+  .clients-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  /* Styling for each client name */
+  .client-item {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 10px;
+  }
+  
+  /* Media query for small screens */
+  @media (max-width: 768px) {
+    .clients-container {
+      padding: 40px 15px;
+    }
+  
+    .clients-container h1 {
+      font-size: 2rem;
+    }
+  
+    .client-item {
+      font-size: 1.25rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .clients-container h1 {
+      font-size: 1.75rem;
+    }
+  }
+  

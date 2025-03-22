@@ -1,26 +1,53 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Header from './components/Header';
-import Footer from './components/Footer';
-import HomePage from './pages/HomePage';
-import AboutPage from './pages/AboutPage';
-import './App.css'; // Import global styles
+import { AnimatePresence } from 'framer-motion';
 
-const App = () => {
+// Import pages
+import Home from './pages/Home';
+import Project from './pages/Project';
+import ProjectDetail from './pages/ProjectDetail';
+import About from './pages/About';
+import Services from './pages/Services';
+import Journal from './pages/Journal';
+import JournalDetail from './pages/JournalDetail';
+import Contact from './pages/Contact';
+import NotFound from './pages/NotFound';
+import Profile from './pages/Profile';
+import InstagramFeed from './pages/InstagramFeed';
+import Blog from './pages/Blog';
+import Feedback from './pages/Feedback';
+
+// Import components
+import Footer from './components/Footer';
+
+// Import global styles
+import './styles/App.css';
+
+function App() {
   return (
     <Router>
       <div className="app">
-        <Header />
-        <div className="content">
+        <AnimatePresence mode="wait">
           <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/about" element={<AboutPage />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/project" element={<Project />} />
+            <Route path="/project/:projectSlug" element={<ProjectDetail />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/journal" element={<Journal />} />
+            <Route path="/journal/:articleSlug" element={<JournalDetail />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/instagram-feed" element={<InstagramFeed />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/feedback" element={<Feedback />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
-        </div>
+        </AnimatePresence>
         <Footer />
       </div>
     </Router>
   );
-};
+}
 
 export default App;
