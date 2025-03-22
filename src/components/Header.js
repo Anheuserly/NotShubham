@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import "../styles/Header.css";
-
 // Import your logo
 import Logo from "../path/image/logo/Arcelevenarchitect_logo.png";
 
@@ -33,14 +32,12 @@ const Header = () => {
   const handleScroll = () => {
     if (typeof window !== "undefined") {
       const scrollY = window.scrollY;
-
       // Only hide header after scrolling down a bit (e.g., 100px)
       if (scrollY > lastScrollY && scrollY > 100) {
         setHeaderVisible(false); // Hide header
       } else {
         setHeaderVisible(true); // Show header
       }
-
       setLastScrollY(scrollY); // Update last scroll position
     }
   };
@@ -80,7 +77,6 @@ const Header = () => {
               <img src={Logo} alt="ARC ELEVEN" />
             </Link>
           </div>
-
           {/* Center - Navigation Items (visible in desktop) */}
           <ul className="nav-links-desktop">
             {navItems.map((item, index) => (
@@ -94,13 +90,11 @@ const Header = () => {
               </li>
             ))}
           </ul>
-
           {/* Right side container for brand name and hamburger */}
           <div className="header-right">
-            {/* Brand Name next to Hamburger - Always visible */}
+            {/* Brand Name next to Hamburger - Visible on desktop, hidden on mobile */}
             <span className="brand-name">ARCELEVENARCHITECT</span>
-
-            {/* Hamburger Menu Button */}
+            {/* Hamburger Menu Button - Hidden on desktop, visible on mobile */}
             <button 
               className="menu-toggle" 
               onClick={toggleMenu} 
