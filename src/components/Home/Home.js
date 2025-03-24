@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import '../styles/Home.css';
+import './Home.css';
 
 function Home() {
   const navigate = useNavigate();
@@ -13,8 +13,7 @@ function Home() {
     { id: 6, title: "DrNath", path: "/drnath", isExternal: false },
     { id: 7, title: "Seamless Gate", path: "/seamlessgate", isExternal: false },
     { id: 8, title: "Hall Of malovelance", path: "/hallofmalovelance", isExternal: false },
-    { id: 9, title: "Nightmare Empire", path: "/nightmareempire", isExternal: false },
-    {id: 10, title: "Vera AI", path: "/veraai", isExternal: false }
+    { id: 9, title: "Nightmare Empire", path: "/nightmareempire", isExternal: false }
   ];
 
   const handleCardClick = (option) => {
