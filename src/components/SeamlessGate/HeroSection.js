@@ -4,9 +4,12 @@ import '../../styles/SeamlessGate/HeroSection.css';
 
 function HeroSection() {
   return (
-    <section className="notshubham-hero">
-      <h2>Welcome to Not Shubham</h2>
-      <p>Explore our content and services.</p>
+    <section className="seamless-hero">
+      <div className="hero-overlay"></div>
+      <div className="hero-content">
+        <h1 className="hero-title">SEAMLESS GATE</h1>
+        <p className="hero-subtitle">One of the Top 3 Groups in SAMP SERVER UIF</p>
+      </div>
     </section>
   );
 }

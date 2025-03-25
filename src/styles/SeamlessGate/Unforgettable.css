@@ -1,0 +1,69 @@
+/* Unforgettable.css */
+
+/* Container styling */
+.unforgettable-container {
+    max-width: 600px;
+    margin: 40px auto;
+    background: #222;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(255, 69, 0, 0.3);
+    text-align: center;
+    color: white;
+  }
+  
+  /* Title styling */
+  .unforgettable-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #ff4500; /* Orange-Red Theme */
+    margin-bottom: 15px;
+  }
+  
+  /* List container */
+  .unforgettable-list {
+    list-style: none;
+    padding: 0;
+  }
+  
+  /* List items */
+  .unforgettable-list li {
+    background: rgba(255, 69, 0, 0.2);
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    transition: 0.3s;
+  }
+  
+  /* Hover effect */
+  .unforgettable-list li:hover {
+    background: rgba(255, 69, 0, 0.5);
+    transform: scale(1.05);
+  }
+  
+  /* No data message */
+  .no-data {
+    font-size: 14px;
+    color: #bbb;
+    padding: 10px;
+  }
+  
+  /* Responsive design */
+  @media (max-width: 600px) {
+    .unforgettable-container {
+      width: 90%;
+      padding: 15px;
+    }
+  
+    .unforgettable-title {
+      font-size: 20px;
+    }
+  
+    .unforgettable-list li {
+      font-size: 14px;
+    }
+  }
+  

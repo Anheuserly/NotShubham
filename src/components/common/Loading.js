@@ -5,8 +5,7 @@ import logo from '../../loading.svg';
 function Loading() {
   return (
     <div className="loading-container">
-      <img src={logo} className="loading-logo" alt="logo" />
-      <p>Loading...</p>
+      <img src={logo} className="loading-logo" alt="Loading..." />
     </div>
   );
 }

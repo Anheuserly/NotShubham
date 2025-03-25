@@ -1,0 +1,26 @@
+.discord-container {
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .discord-button {
+    display: inline-block;
+    background-color: #5865F2;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    margin-top: 10px;
+    transition: background 0.3s;
+  }
+  
+  .discord-button:hover {
+    background-color: #4752c4;
+  }
+  
+  .discord-widget {
+    margin-top: 20px;
+    border-radius: 8px;
+  }
+  

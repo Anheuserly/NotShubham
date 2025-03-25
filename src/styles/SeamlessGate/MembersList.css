@@ -1,0 +1,30 @@
+.members-container {
+    text-align: center;
+    font-family: Arial, sans-serif;
+    padding: 20px;
+  }
+  
+  .members-table {
+    width: 80%;
+    margin: auto;
+    border-collapse: collapse;
+  }
+  
+  .members-table th, .members-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+  }
+  
+  .members-table th {
+    background-color: #f4f4f4;
+  }
+  
+  .members-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  
+  .members-table tr:hover {
+    background-color: #f1f1f1;
+  }
+  

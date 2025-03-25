@@ -1,24 +1,11 @@
 .loading-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    background-color: #282c34;
-    color: white;
-  }
-  
-  .loading-logo {
-    height: 40vmin;
-    pointer-events: none;
-    animation: loading-logo-spin infinite 20s linear;
-  }
-  
-  @keyframes loading-logo-spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh; /* Full viewport height */
+}
+
+.loading-logo {
+  max-width: 150px; /* Adjust size as needed */
+  height: auto;
+}

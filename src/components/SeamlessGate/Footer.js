@@ -5,7 +5,7 @@ import '../../styles/SeamlessGate/Footer.css';
 function Footer() {
   return (
     <footer className="notshubham-footer">
-      <p>&copy; 2025 Not Shubham. All rights reserved.</p>
+      <p>&copy; 2025 Seamless Gate. All rights reserved.</p>
     </footer>
   );
 }

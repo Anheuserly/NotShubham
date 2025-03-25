@@ -11,6 +11,9 @@ import CoachanilsainiHome from './pages/Coachanilsaini/Home';
 import AmcsgeHome from './pages/Amcsge/Home';
 import DrNathHome from './pages/DrNath/Home';
 import SeamlessGateHome from './pages/SeamlessGate/Home';
+import SeamlessGateAbout from './pages/SeamlessGate/About';
+import SeamlessGateMembers from './pages/SeamlessGate/Members';
+import SeamlessGateGallery from './pages/SeamlessGate/Gallery';
 import HallOfMalovelanceHome from './pages/HallOfMalovelance/Home';
 import NightmareEmpireHome from './pages/NightmareEmpire/Home';
 import VeraAIHome from './pages/VeraAI/Home';
@@ -32,11 +35,7 @@ function RouteTransition({ children }) {
     return () => clearTimeout(timer);
   }, [location.pathname]);
 
-  if (isLoading) {
-    return <Loading />;
-  }
-
-  return children;
+  return isLoading ? <Loading /> : children;
 }
 
 function App() {
@@ -61,60 +60,31 @@ function App() {
         <Route path="/" element={<Home />} />
         
         {/* NotShubham routes */}
-        <Route path="/notshubham" element={
-          <RouteTransition>
-            <NotShubhamHome />
-          </RouteTransition>
-        } />
+        <Route path="/notshubham" element={<RouteTransition><NotShubhamHome /></RouteTransition>} />
         
         {/* Coachanilsaini routes */}
-        <Route path="/coachanilsaini" element={
-          <RouteTransition>
-            <CoachanilsainiHome />
-          </RouteTransition>
-        } />
+        <Route path="/coachanilsaini" element={<RouteTransition><CoachanilsainiHome /></RouteTransition>} />
         
         {/* Amcsge routes */}
-        <Route path="/amcsge" element={
-          <RouteTransition>
-            <AmcsgeHome />
-          </RouteTransition>
-        } />
+        <Route path="/amcsge" element={<RouteTransition><AmcsgeHome /></RouteTransition>} />
         
         {/* DrNath routes */}
-        <Route path="/drnath" element={
-          <RouteTransition>
-            <DrNathHome />
-          </RouteTransition>
-        } />
+        <Route path="/drnath" element={<RouteTransition><DrNathHome /></RouteTransition>} />
         
         {/* SeamlessGate routes */}
-        <Route path="/seamlessgate" element={
-          <RouteTransition>
-            <SeamlessGateHome />
-          </RouteTransition>
-        } />
+        <Route path="/seamlessgate" element={<RouteTransition><SeamlessGateHome /></RouteTransition>} />
+        <Route path="/seamlessgate/about" element={<RouteTransition><SeamlessGateAbout /></RouteTransition>} />
+        <Route path="/seamlessgate/members" element={<RouteTransition><SeamlessGateMembers /></RouteTransition>} />
+        <Route path="/seamlessgate/gallery" element={<RouteTransition><SeamlessGateGallery /></RouteTransition>} />
         
         {/* HallOfMalovelance routes */}
-        <Route path="/hallofmalovelance" element={
-          <RouteTransition>
-            <HallOfMalovelanceHome />
-          </RouteTransition>
-        } />
+        <Route path="/hallofmalovelance" element={<RouteTransition><HallOfMalovelanceHome /></RouteTransition>} />
         
         {/* NightmareEmpire routes */}
-        <Route path="/nightmareempire" element={
-          <RouteTransition>
-            <NightmareEmpireHome />
-          </RouteTransition>
-        } />
+        <Route path="/nightmareempire" element={<RouteTransition><NightmareEmpireHome /></RouteTransition>} />
 
-        {/* NightmareEmpire routes */}
-        <Route path="/veraai" element={
-          <RouteTransition>
-            <VeraAIHome />
-          </RouteTransition>
-        } />
+        {/* VeraAI routes */}
+        <Route path="/veraai" element={<RouteTransition><VeraAIHome /></RouteTransition>} />
         
         {/* Redirect any unknown routes to home */}
         <Route path="*" element={<Navigate to="/" replace />} />
