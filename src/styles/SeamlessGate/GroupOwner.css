@@ -1,0 +1,119 @@
+/* GroupOwner.css */
+
+/* Main container */
+.owner-container {
+    max-width: 900px;
+    margin: 50px auto;
+    background: linear-gradient(135deg, #1a1a1a, #2c2c2c);
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0px 5px 15px rgba(255, 69, 0, 0.4);
+    color: white;
+    animation: fadeIn 1s ease-in-out;
+  }
+  
+  /* Title */
+  .owner-title {
+    font-size: 30px;
+    font-weight: bold;
+    color: #ff4500;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+  
+  /* Subtitle */
+  .owner-subtitle {
+    font-size: 16px;
+    color: #ddd;
+    margin-bottom: 20px;
+  }
+  
+  /* Owner list */
+  .owner-list {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  
+  /* Individual owner card */
+  .owner-card {
+    background: rgba(255, 69, 0, 0.15);
+    padding: 20px;
+    border-radius: 10px;
+    width: 250px;
+    text-align: center;
+    box-shadow: 0px 4px 8px rgba(255, 69, 0, 0.3);
+    transition: 0.3s ease-in-out;
+    position: relative;
+  }
+  
+  /* Owner image */
+  .owner-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 3px solid #ff4500;
+    margin-bottom: 10px;
+  }
+  
+  /* Owner name */
+  .owner-name {
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+  }
+  
+  /* Rank */
+  .owner-rank {
+    display: inline-block;
+    background: #ff4500;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+  
+  /* Description */
+  .owner-description {
+    font-size: 14px;
+    color: #ccc;
+    margin-top: 10px;
+  }
+  
+  /* Hover effect */
+  .owner-card:hover {
+    transform: scale(1.05);
+    background: rgba(255, 69, 0, 0.3);
+  }
+  
+  /* Fade-in animation */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 600px) {
+    .owner-container {
+      width: 90%;
+      padding: 20px;
+    }
+  
+    .owner-card {
+      width: 100%;
+    }
+  
+    .owner-title {
+      font-size: 24px;
+    }
+  }
+  

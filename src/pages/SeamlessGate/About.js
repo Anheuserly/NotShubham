@@ -1,7 +1,7 @@
 import React from 'react';
 import Header from '../../components/SeamlessGate/Header';
 import Footer from '../../components/SeamlessGate/Footer';
-import OurHistory from '../../components/SeamlessGate/OurHistory';
+import History from "../../components/SeamlessGate/History";
 import Information from '../../components/SeamlessGate/Information';
 import Rules from '../../components/SeamlessGate/Rules';
 import GroupScores from '../../components/SeamlessGate/GroupScores';
@@ -18,7 +18,7 @@ function AboutPage() {
       <Header />
       
       <About />
-      <OurHistory />
+      <History />
       <Information />
       <Rules />
       <GroupScores />

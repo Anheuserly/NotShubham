@@ -1,0 +1,107 @@
+/* Rules.css */
+
+/* Main container styling */
+.rules-container {
+    max-width: 800px;
+    margin: 50px auto;
+    background: #1a1a1a;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0px 5px 15px rgba(255, 69, 0, 0.4);
+    text-align: center;
+    color: white;
+    animation: fadeIn 1s ease-in-out;
+  }
+  
+  /* Title styling */
+  .rules-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #ff4500;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+  }
+  
+  /* Rules list container */
+  .rules-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  /* Individual rule item */
+  .rule-item {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 69, 0, 0.2);
+    padding: 15px;
+    border-radius: 8px;
+    transition: 0.3s ease-in-out;
+  }
+  
+  /* Rule number styling */
+  .rule-number {
+    font-size: 22px;
+    font-weight: bold;
+    color: #ff4500;
+    margin-right: 15px;
+  }
+  
+  /* Rule content container */
+  .rule-content {
+    text-align: left;
+  }
+  
+  /* Rule heading */
+  .rule-heading {
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 5px;
+  }
+  
+  /* Rule description */
+  .rule-description {
+    font-size: 14px;
+    color: #ddd;
+  }
+  
+  /* Hover effect */
+  .rule-item:hover {
+    transform: scale(1.05);
+    background: rgba(255, 69, 0, 0.4);
+    box-shadow: 0px 4px 8px rgba(255, 69, 0, 0.3);
+  }
+  
+  /* Fade-in animation */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 600px) {
+    .rules-container {
+      width: 90%;
+      padding: 20px;
+    }
+  
+    .rule-heading {
+      font-size: 16px;
+    }
+  
+    .rule-description {
+      font-size: 12px;
+    }
+  
+    .rule-number {
+      font-size: 18px;
+    }
+  }
+  
