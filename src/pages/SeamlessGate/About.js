@@ -6,18 +6,18 @@ import Information from '../../components/SeamlessGate/Information';
 import Rules from '../../components/SeamlessGate/Rules';
 import GroupScores from '../../components/SeamlessGate/GroupScores';
 import GroupRanking from '../../components/SeamlessGate/GroupRanking';
-import About from '../../components/SeamlessGate/About';
+import SeamlessGateAbout from '../../components/SeamlessGate/SeamlessGateAbout';
 import GroupOwner from '../../components/SeamlessGate/GroupOwner';
 import Discord from '../../components/SeamlessGate/Discord'; // ✅ Added Discord Component
 
 import '../../styles/SeamlessGate/About.css';
 
-function AboutPage() {
+function About() {
   return (
     <div className="seamless-about-page">
       <Header />
       
-      <About />
+      <SeamlessGateAbout />
       <History />
       <Information />
       <Rules />
@@ -33,4 +33,4 @@ function AboutPage() {
   );
 }
 
-export default AboutPage;
+export default About;

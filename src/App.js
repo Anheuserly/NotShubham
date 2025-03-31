@@ -10,6 +10,7 @@ import NotShubhamHome from './pages/NotShubham/Home';
 import CoachanilsainiHome from './pages/Coachanilsaini/Home';
 import AmcsgeHome from './pages/Amcsge/Home';
 import DrNathHome from './pages/DrNath/Home';
+import DrNathAbout from './pages/DrNath/About';
 import SeamlessGateHome from './pages/SeamlessGate/Home';
 import SeamlessGateAbout from './pages/SeamlessGate/About';
 import SeamlessGateMembers from './pages/SeamlessGate/Members';
@@ -70,7 +71,10 @@ function App() {
         
         {/* DrNath routes */}
         <Route path="/drnath" element={<RouteTransition><DrNathHome /></RouteTransition>} />
-        
+        <Route path="/drnath/about" element={<RouteTransition><DrNathAbout /></RouteTransition>} />
+
+      
+
         {/* SeamlessGate routes */}
         <Route path="/seamlessgate" element={<RouteTransition><SeamlessGateHome /></RouteTransition>} />
         <Route path="/seamlessgate/about" element={<RouteTransition><SeamlessGateAbout /></RouteTransition>} />

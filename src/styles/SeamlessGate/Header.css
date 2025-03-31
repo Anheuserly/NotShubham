@@ -10,9 +10,25 @@
   position: sticky;
   top: 0;
   z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+.seamless-header.scrolled {
+  padding: 10px 30px;
+  background: rgba(30, 30, 47, 0.95);
+  backdrop-filter: blur(10px);
 }
 
 /* 🔥 Logo */
+.logo {
+  z-index: 1001;
+}
+
+.logo a {
+  text-decoration: none;
+  color: white;
+}
+
 .logo h1 {
   font-size: 1.8rem;
   font-weight: bold;
@@ -26,10 +42,17 @@
 }
 
 /* 🌍 Navigation */
+.nav-container {
+  display: flex;
+  align-items: center;
+}
+
 .nav-links {
   display: flex;
   gap: 20px;
   list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .nav-links li {
@@ -42,6 +65,8 @@
   font-size: 1.1rem;
   font-weight: 500;
   transition: color 0.3s ease;
+  display: block;
+  padding: 5px 0;
 }
 
 .nav-links a:hover {
@@ -62,12 +87,18 @@
   width: 100%;
 }
 
-
 /* 📱 Mobile Menu */
 .menu-icon {
   display: none;
   font-size: 1.8rem;
   cursor: pointer;
+  z-index: 1001;
+  color: white;
+  transition: color 0.3s ease;
+}
+
+.menu-icon:hover {
+  color: #ff4d4d;
 }
 
 /* 🎮 Discord Stats */
@@ -101,30 +132,115 @@
   color: #43b581; /* Discord green */
 }
 
+/* Mobile Styles */
 @media (max-width: 768px) {
+  .seamless-header {
+    padding: 15px 20px;
+    position: relative;
+  }
+  
   .menu-icon {
-      display: block;
+    display: block;
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
   }
-
+  
+  .logo {
+    margin: 0 auto;
+  }
+  
+  .logo h1 {
+    font-size: 1.5rem;
+  }
+  
+  .nav-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    visibility: hidden;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 1000;
+  }
+  
+  .nav-container.nav-active {
+    visibility: visible;
+    opacity: 1;
+  }
+  
   .nav-links {
-      position: absolute;
-      top: 60px;
-      right: 0;
-      background: rgba(30, 30, 47, 0.95);
-      flex-direction: column;
-      width: 200px;
-      height: auto;
-      padding: 15px;
-      box-shadow: -5px 0px 10px rgba(0, 0, 0, 0.3);
-      transform: translateX(100%);
-      transition: transform 0.3s ease-in-out;
+    position: absolute;
+    top: 0;
+    left: -250px;
+    background: linear-gradient(135deg, #1e1e2f, #2c2f33);
+    flex-direction: column;
+    width: 250px;
+    height: 100vh;
+    padding: 80px 20px 20px;
+    gap: 10px;
+    box-shadow: 5px 0px 10px rgba(0, 0, 0, 0.3);
+    transition: left 0.3s ease-in-out;
+    overflow-y: auto;
   }
-
-  .nav-active {
-      transform: translateX(0);
+  
+  .nav-container.nav-active .nav-links {
+    left: 0;
   }
-
+  
   .nav-links li {
-      padding: 10px;
+    width: 100%;
+    padding: 0;
+  }
+  
+  .nav-links a {
+    padding: 15px 10px;
+    border-radius: 5px;
+    width: 100%;
+    font-size: 1.2rem;
+  }
+  
+  .nav-links a:hover {
+    background: rgba(255, 77, 77, 0.1);
+  }
+  
+  .nav-links a::after {
+    display: none;
+  }
+}
+
+/* Animation for menu items */
+@media (max-width: 768px) {
+  .nav-container.nav-active .nav-links li {
+    opacity: 0;
+    transform: translateX(-20px);
+    animation: slideIn 0.3s forwards;
+  }
+  
+  .nav-container.nav-active .nav-links li:nth-child(1) {
+    animation-delay: 0.1s;
+  }
+  
+  .nav-container.nav-active .nav-links li:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  
+  .nav-container.nav-active .nav-links li:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+  
+  .nav-container.nav-active .nav-links li:nth-child(4) {
+    animation-delay: 0.4s;
+  }
+  
+  @keyframes slideIn {
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
   }
 }

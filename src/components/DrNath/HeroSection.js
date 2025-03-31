@@ -4,9 +4,9 @@ import '../../styles/DrNath/HeroSection.css';
 
 function HeroSection() {
   return (
-    <section className="notshubham-hero">
-      <h2>Welcome to Not Shubham</h2>
-      <p>Explore our content and services.</p>
+    <section className="drnath-hero">
+      <h2>Welcome to DrNath</h2>
+      <p>Expert Guidance & Quality Services for Your Needs.</p>
     </section>
   );
 }

@@ -2,7 +2,7 @@ import React from 'react';
 import Header from '../../components/SeamlessGate/Header';
 import Footer from '../../components/SeamlessGate/Footer';
 import HeroSection from '../../components/SeamlessGate/HeroSection';
-import About from '../../components/SeamlessGate/About';
+import About from '../../components/SeamlessGate/SeamlessGateAbout';
 import Information from '../../components/SeamlessGate/Information'; // ✅ Added Information Section
 import Rules from '../../components/SeamlessGate/Rules'; // ✅ Added Rules Section
 import GroupScores from '../../components/SeamlessGate/GroupScores'; // ✅ Group Scores Section

@@ -1,14 +1,20 @@
 import React from 'react';
-import '../../styles/DrNath/Header.css';
+import { Link } from 'react-router-dom'; // Import Link for routing
+import '../../styles/DrNath/Header.css'; // Ensure to create this CSS file
 
 function Header() {
   return (
-    <header className="notshubham-header">
-      <h1>Not Shubham</h1>
+    <header className="dr-nath-header">
+      <div className="logo">
+        <h1>Dr. Nath</h1>
+      </div>
       <nav>
-        <ul>
-          <li><a href="#home">Home</a></li>
-          <li><a href="#about">About</a></li>
+        <ul className="nav-links">
+          <li><Link to="/drnath">Home</Link></li>
+          <li><Link to="/drnath/about">About</Link></li>
+          <li><Link to="/drnath/services">Services</Link></li>
+          <li><Link to="/drnath/testimonials">Testimonials</Link></li>
+          <li><Link to="/drnath/contact">Contact</Link></li>
         </ul>
       </nav>
     </header>

@@ -1,9 +1,9 @@
 import React from 'react';
 import Header from '../../components/DrNath/Header';
 import Footer from '../../components/DrNath/Footer';
-import HeroSection from '../../components/DrNath/HeroSection';
-import About from '../../components/DrNath/About';
-import '../../styles/DrNath/Home.css';
+import DrNathHeroSection from '../../components/DrNath/DrNathHeroSection';
+import About from '../../components/DrNath/DrNathAbout';
+
 
 function Home() {
   return (
@@ -11,7 +11,7 @@ function Home() {
       <Header />
       
       {/* Hero Section */}
-      <HeroSection />
+      <DrNathHeroSection />
 
       {/* About Section */}
       <About />
