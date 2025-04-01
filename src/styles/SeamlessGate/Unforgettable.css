@@ -1,69 +1,644 @@
-/* Unforgettable.css */
+/* Main container */
+.unforgettable-section {
+  position: relative;
+  padding: 3rem 2rem;
+  background-color: #f8f9fa;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  max-width: 1200px;
+  margin: 3rem auto;
+  overflow: hidden;
+  z-index: 1;
+}
 
-/* Container styling */
-.unforgettable-container {
-    max-width: 600px;
-    margin: 40px auto;
-    background: #222;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(255, 69, 0, 0.3);
+/* Background shapes */
+.unforgettable-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  z-index: -1;
+}
+
+.unforgettable-bg-shape {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.1;
+}
+
+.shape1 {
+  width: 400px;
+  height: 400px;
+  background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+  top: -200px;
+  right: -100px;
+}
+
+.shape2 {
+  width: 300px;
+  height: 300px;
+  background: linear-gradient(135deg, #4ECDC4, #45B7D1);
+  bottom: -150px;
+  left: -100px;
+}
+
+.shape3 {
+  width: 200px;
+  height: 200px;
+  background: linear-gradient(135deg, #8338EC, #3A86FF);
+  top: 40%;
+  right: 10%;
+}
+
+/* Header */
+.unforgettable-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.unforgettable-title-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.unforgettable-icon {
+  font-size: 2.5rem;
+  color: #FF6B6B;
+  filter: drop-shadow(0 2px 4px rgba(255, 107, 107, 0.3));
+}
+
+.unforgettable-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin: 0;
+  background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  position: relative;
+}
+
+.unforgettable-subtitle {
+  font-size: 1.1rem;
+  color: #6c757d;
+  max-width: 600px;
+  margin: 0.5rem auto 0;
+}
+
+/* Search */
+.unforgettable-search-container {
+  position: relative;
+  max-width: 500px;
+  margin: 0 auto 2.5rem;
+}
+
+.search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c757d;
+  font-size: 1rem;
+}
+
+.unforgettable-search {
+  width: 100%;
+  padding: 1rem 1rem 1rem 3rem;
+  border: 2px solid #e9ecef;
+  border-radius: 50px;
+  font-size: 1rem;
+  background-color: white;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+}
+
+.unforgettable-search:focus {
+  outline: none;
+  border-color: #FF6B6B;
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.15);
+}
+
+.clear-search {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #6c757d;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+/* Stats */
+.unforgettable-stats {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 2.5rem;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+}
+
+.stat-item:hover {
+  transform: translateY(-5px);
+}
+
+.stat-icon {
+  font-size: 1.8rem;
+  color: #FF6B6B;
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #343a40;
+  line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+  }
+  
+  /* Loading state */
+  .unforgettable-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
     text-align: center;
+  }
+  
+  .loading-spinner {
+    font-size: 2.5rem;
+    color: #FF6B6B;
+    animation: spin 1.5s linear infinite;
+    margin-bottom: 1rem;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* Error state */
+  .unforgettable-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    text-align: center;
+    background-color: #fff5f5;
+    border-radius: 12px;
+    border: 1px solid #ffe3e3;
+  }
+  
+  .error-icon {
+    font-size: 2.5rem;
+    color: #fa5252;
+    margin-bottom: 1rem;
+  }
+  
+  .retry-button {
+    margin-top: 1.5rem;
+    padding: 0.75rem 2rem;
+    background-color: #FF6B6B;
     color: white;
+    border: none;
+    border-radius: 50px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
   }
   
-  /* Title styling */
-  .unforgettable-title {
-    font-size: 24px;
-    font-weight: bold;
-    color: #ff4500; /* Orange-Red Theme */
-    margin-bottom: 15px;
+  .retry-button:hover {
+    background-color: #ff5252;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(255, 107, 107, 0.4);
   }
   
-  /* List container */
-  .unforgettable-list {
-    list-style: none;
-    padding: 0;
+  .retry-button:active {
+    transform: translateY(0);
   }
   
-  /* List items */
-  .unforgettable-list li {
-    background: rgba(255, 69, 0, 0.2);
-    padding: 10px;
-    margin: 5px 0;
-    border-radius: 5px;
-    font-size: 16px;
-    font-weight: bold;
+  /* No results */
+  .no-results {
+    text-align: center;
+    padding: 3rem;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  }
+  
+  .no-results p {
+    font-size: 1.1rem;
+    color: #6c757d;
+    margin-bottom: 1.5rem;
+  }
+  
+  .clear-search-button {
+    padding: 0.75rem 2rem;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 50px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .clear-search-button:hover {
+    background-color: #e9ecef;
+  }
+  
+  /* Grid layout */
+  .unforgettable-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+  }
+  
+  /* Card design */
+  .unforgettable-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    overflow: hidden;
+  }
+  
+  .unforgettable-card:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  }
+  
+  .unforgettable-card.active {
+    border: 2px solid #FF6B6B;
+    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.15);
+  }
+  
+  .unforgettable-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
     color: white;
-    transition: 0.3s;
+    flex-shrink: 0;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border: 3px solid white;
   }
   
-  /* Hover effect */
-  .unforgettable-list li:hover {
-    background: rgba(255, 69, 0, 0.5);
-    transform: scale(1.05);
+  .unforgettable-info {
+    flex: 1;
+    min-width: 0;
   }
   
-  /* No data message */
-  .no-data {
-    font-size: 14px;
-    color: #bbb;
-    padding: 10px;
+  .unforgettable-name {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #343a40;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .unforgettable-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+    color: white;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    box-shadow: 0 2px 5px rgba(255, 107, 107, 0.3);
+  }
+  
+  /* Shine effect */
+  .unforgettable-shine {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.3) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    transform: translateX(-100%);
+    animation: shine 3s infinite;
+    pointer-events: none;
+  }
+  
+  @keyframes shine {
+    0% {
+      transform: translateX(-100%);
+    }
+    20%, 100% {
+      transform: translateX(100%);
+    }
+  }
+  
+  .unforgettable-card.active .unforgettable-shine {
+    animation: shine 2s infinite;
+  }
+  
+  /* Footer */
+  .unforgettable-footer {
+    text-align: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e9ecef;
+    color: #6c757d;
+    font-size: 0.95rem;
+  }
+  
+  /* Dark mode support */
+  @media (prefers-color-scheme: dark) {
+    .unforgettable-section {
+      background-color: #212529;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+    
+    .unforgettable-bg-shape {
+      opacity: 0.05;
+    }
+    
+    .unforgettable-subtitle {
+      color: #adb5bd;
+    }
+    
+    .unforgettable-search {
+      background-color: #343a40;
+      border-color: #495057;
+      color: #f8f9fa;
+    }
+    
+    .unforgettable-search:focus {
+      border-color: #FF6B6B;
+      box-shadow: 0 4px 15px rgba(255, 107, 107, 0.2);
+    }
+    
+    .search-icon, .clear-search {
+      color: #adb5bd;
+    }
+    
+    .stat-item {
+      background-color: #343a40;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+    
+    .stat-value {
+      color: #f8f9fa;
+    }
+    
+    .stat-label {
+      color: #adb5bd;
+    }
+    
+    .unforgettable-error {
+      background-color: #3b2b2b;
+      border-color: #5c3636;
+    }
+    
+    .no-results {
+      background-color: #343a40;
+    }
+    
+    .no-results p {
+      color: #adb5bd;
+    }
+    
+    .clear-search-button {
+      background-color: #495057;
+      border-color: #6c757d;
+      color: #f8f9fa;
+    }
+    
+    .clear-search-button:hover {
+      background-color: #6c757d;
+    }
+    
+    .unforgettable-card {
+      background-color: #343a40;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+    
+    .unforgettable-card:hover {
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+    }
+    
+    .unforgettable-name {
+      color: #f8f9fa;
+    }
+    
+    .unforgettable-avatar {
+      border-color: #343a40;
+    }
+    
+    .unforgettable-footer {
+      border-top-color: #495057;
+      color: #adb5bd;
+    }
   }
   
   /* Responsive design */
-  @media (max-width: 600px) {
-    .unforgettable-container {
-      width: 90%;
-      padding: 15px;
+  @media (max-width: 992px) {
+    .unforgettable-section {
+      padding: 2.5rem 1.5rem;
+      margin: 2rem 1rem;
     }
-  
+    
     .unforgettable-title {
-      font-size: 20px;
+      font-size: 2.2rem;
     }
-  
-    .unforgettable-list li {
-      font-size: 14px;
+    
+    .unforgettable-icon {
+      font-size: 2.2rem;
+    }
+    
+    .unforgettable-grid {
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.25rem;
     }
   }
   
+  @media (max-width: 768px) {
+    .unforgettable-section {
+      padding: 2rem 1.25rem;
+    }
+    
+    .unforgettable-title-container {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .unforgettable-title {
+      font-size: 2rem;
+    }
+    
+    .unforgettable-subtitle {
+      font-size: 1rem;
+    }
+    
+    .unforgettable-stats {
+      flex-direction: column;
+      gap: 1rem;
+      max-width: 350px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .stat-item {
+      width: 100%;
+    }
+    
+    .unforgettable-grid {
+      grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .unforgettable-section {
+      padding: 1.5rem 1rem;
+      margin: 1.5rem 0.75rem;
+      border-radius: 12px;
+    }
+    
+    .unforgettable-title {
+      font-size: 1.8rem;
+    }
+    
+    .unforgettable-icon {
+      font-size: 1.8rem;
+    }
+    
+    .unforgettable-subtitle {
+      font-size: 0.95rem;
+    }
+    
+    .unforgettable-search {
+      padding: 0.85rem 1rem 0.85rem 2.75rem;
+      font-size: 0.95rem;
+    }
+    
+    .search-icon {
+      left: 12px;
+    }
+    
+    .unforgettable-card {
+      padding: 1rem;
+    }
+    
+    .unforgettable-avatar {
+      width: 50px;
+      height: 50px;
+      font-size: 1.25rem;
+    }
+    
+    .unforgettable-name {
+      font-size: 1rem;
+    }
+    
+    .unforgettable-badge {
+      padding: 0.2rem 0.6rem;
+      font-size: 0.75rem;
+    }
+  }
+  
+  /* Accessibility improvements */
+  @media (prefers-reduced-motion: reduce) {
+    .loading-spinner {
+      animation: none;
+    }
+    
+    .unforgettable-shine {
+      animation: none;
+    }
+    
+    .stat-item:hover {
+      transform: none;
+    }
+    
+    .retry-button:hover {
+      transform: none;
+    }
+  }
+  
+  /* Print styles */
+  @media print {
+    .unforgettable-section {
+      box-shadow: none;
+      padding: 1rem;
+      margin: 0;
+    }
+    
+    .unforgettable-background {
+      display: none;
+    }
+    
+    .unforgettable-search-container {
+      display: none;
+    }
+    
+    .unforgettable-grid {
+      gap: 1rem;
+    }
+    
+    .unforgettable-card {
+      box-shadow: none;
+      border: 1px solid #dee2e6;
+      break-inside: avoid;
+    }
+    
+    .unforgettable-shine {
+      display: none;
+    }
+    
+    .unforgettable-badge {
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+    
+    .unforgettable-avatar {
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+      box-shadow: none;
+    }
+  }
