@@ -19,14 +19,16 @@ import HallOfMalovelanceHome from './pages/HallOfMalovelance/Home';
 import NightmareEmpireHome from './pages/NightmareEmpire/Home';
 import VeraAIHome from './pages/VeraAI/Home';
 
-// Import Loading component
+// Import common components
 import Loading from './components/common/Loading';
+import MetaTags from './components/common/MetaTags';
+import StructuredData from './components/common/StructuredData';
 
 // RouteTransition component to handle loading between route changes
 function RouteTransition({ children }) {
   const [isLoading, setIsLoading] = useState(true);
   const location = useLocation();
-
+  
   useEffect(() => {
     setIsLoading(true);
     const timer = setTimeout(() => {
@@ -39,24 +41,12 @@ function RouteTransition({ children }) {
   return isLoading ? <Loading /> : children;
 }
 
-function App() {
-  const [initialLoading, setInitialLoading] = useState(true);
-
-  useEffect(() => {
-    // Initial app loading
-    const timer = setTimeout(() => {
-      setInitialLoading(false);
-    }, 2000);
-    
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (initialLoading) {
-    return <Loading />;
-  }
-
+// AppContent component to use location
+function AppContent() {
   return (
-    <Router>
+    <>
+      <MetaTags />
+      <StructuredData />
       <Routes>
         <Route path="/" element={<Home />} />
         
@@ -72,9 +62,7 @@ function App() {
         {/* DrNath routes */}
         <Route path="/drnath" element={<RouteTransition><DrNathHome /></RouteTransition>} />
         <Route path="/drnath/about" element={<RouteTransition><DrNathAbout /></RouteTransition>} />
-
-      
-
+        
         {/* SeamlessGate routes */}
         <Route path="/seamlessgate" element={<RouteTransition><SeamlessGateHome /></RouteTransition>} />
         <Route path="/seamlessgate/about" element={<RouteTransition><SeamlessGateAbout /></RouteTransition>} />
@@ -86,13 +74,36 @@ function App() {
         
         {/* NightmareEmpire routes */}
         <Route path="/nightmareempire" element={<RouteTransition><NightmareEmpireHome /></RouteTransition>} />
-
+        
         {/* VeraAI routes */}
         <Route path="/veraai" element={<RouteTransition><VeraAIHome /></RouteTransition>} />
         
         {/* Redirect any unknown routes to home */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+    </>
+  );
+}
+
+function App() {
+  const [initialLoading, setInitialLoading] = useState(true);
+  
+  useEffect(() => {
+    // Initial app loading
+    const timer = setTimeout(() => {
+      setInitialLoading(false);
+    }, 2000);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (initialLoading) {
+    return <Loading />;
+  }
+
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 }
