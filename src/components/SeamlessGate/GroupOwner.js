@@ -10,7 +10,7 @@ const owners = [
       "A true leader with unmatched strategy and skill. Rodsmun's presence commands respect, and their leadership drives Seamless Gate to new heights.",
     image: "https://via.placeholder.com/300",
     specialties: ["Strategy", "Leadership", "Combat"],
-    joinDate: "Founding Member",
+    joinDate: "4th June 2020",
     quote: "Victory requires sacrifice, but triumph demands unity."
   },
   {
@@ -20,9 +20,21 @@ const owners = [
       "The backbone of Seamless Gate, Avryll's wisdom and decision-making are legendary. Their ability to unite members and lead with fairness makes them an icon.",
     image: "https://via.placeholder.com/300",
     specialties: ["Diplomacy", "Wisdom", "Organization"],
-    joinDate: "Founding Member",
+    joinDate: "2020",
     quote: "Our strength lies not in our individual power, but in our collective resolve."
   },
+
+  {
+    name: "[D]omA",
+    rank: "Dep. Archon",
+    description:
+      "Known for tactical brilliance and unwavering loyalty, [D]omA supports the Archons with precision and power. Their ability to adapt and execute plans is unmatched.",
+    image: "https://via.placeholder.com/300",
+    specialties: ["Tactics", "Support", "Adaptability"],
+    joinDate: "14th august 2021",
+    quote: "Loyalty is our strength, and unity is our blade."
+  },
+
 ];
 
 function GroupOwner() {

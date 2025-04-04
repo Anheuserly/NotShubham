@@ -8,6 +8,7 @@ import Rules from '../../components/SeamlessGate/Rules'; // ✅ Added Rules Sect
 import GroupScores from '../../components/SeamlessGate/GroupScores'; // ✅ Group Scores Section
 import GroupRanking from '../../components/SeamlessGate/GroupRanking'; // ✅ Group Ranking Section
 import GroupOwner from '../../components/SeamlessGate/GroupOwner'; // ✅ Group Owner Section
+import GroupLeaders from '../../components/SeamlessGate/GroupLeaders'; // ✅ Group Owner Section
 import Discord from '../../components/SeamlessGate/Discord'; // ✅ Discord Section
 
 import '../../styles/SeamlessGate/Home.css';
@@ -37,6 +38,9 @@ function Home() {
 
       {/* 👑 Group Owner Details */}
       <GroupOwner />
+
+      {/* 👑 Group Owner Details */}
+      <GroupLeaders />
 
       {/* 🎮 Join us on Discord */}
       <Discord />
