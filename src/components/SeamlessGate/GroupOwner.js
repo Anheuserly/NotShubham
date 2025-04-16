@@ -15,7 +15,7 @@ const owners = [
   },
   {
     name: "Avryll",
-    rank: "Archon",
+    rank: "Impera",
     description:
       "The backbone of Seamless Gate, Avryll's wisdom and decision-making are legendary. Their ability to unite members and lead with fairness makes them an icon.",
     image: "https://via.placeholder.com/300",
@@ -26,7 +26,7 @@ const owners = [
 
   {
     name: "[D]omA",
-    rank: "Dep. Archon",
+    rank: "Deputy",
     description:
       "Known for tactical brilliance and unwavering loyalty, [D]omA supports the Archons with precision and power. Their ability to adapt and execute plans is unmatched.",
     image: "https://via.placeholder.com/300",
