@@ -29,7 +29,7 @@ const leaders = {
       quote: "Victory is not given, it is taken through strategy and determination."
     },
     {
-      name: "Kirax",
+      name: "_Krish",
       role: "Exarch",
       description: "The diplomatic force behind Seamless Gate's alliances. Kirax's ability to forge powerful connections has expanded our influence across the realm.",
       image: "https://via.placeholder.com/300",
@@ -49,14 +49,7 @@ const leaders = {
    
   ],
   preators: [
-    {
-      name: "Anheuserly",
-      role: "Preator",
-      description: "A disciplined enforcer of Seamless Gate's code. Anheuserly ensures all members adhere to our principles and standards.",
-      image: "https://via.placeholder.com/300",
-      specialties: ["Bot Hosting", "Training", "Organization"],
-      joinDate: "-"
-    },
+  
     {
       name: "brim$tone",
       role: "Preator",
@@ -104,6 +97,15 @@ const leaders = {
       name: "PheonixBlaze",
       role: "Justicar",
       description: "The diplomatic mediator who resolves external conflicts. PheonixBlaze's negotiation skills have prevented many unnecessary battles.",
+      image: "https://via.placeholder.com/300",
+      specialties: ["Diplomacy", "Negotiation", "Alliance Management"],
+      joinDate: "May 2022"
+    },
+
+    {
+      name: "Abodk",
+      role: "Justicar",
+      description: "The diplomatic mediator who resolves external conflicts. Abodk's negotiation skills have prevented many unnecessary battles.",
       image: "https://via.placeholder.com/300",
       specialties: ["Diplomacy", "Negotiation", "Alliance Management"],
       joinDate: "May 2022"
