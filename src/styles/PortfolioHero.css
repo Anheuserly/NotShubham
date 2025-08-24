@@ -1,0 +1,163 @@
+/* ==========================
+   Portfolio Hero Section
+   Advanced Modern Dark Theme
+   ========================== */
+
+   .portfolio-hero {
+    position: relative;
+    height: 100vh;
+    width: 100%;
+    background: linear-gradient(135deg, #0d0d0d, #1a1a1a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    text-align: center;
+    color: #e6e6e6;
+    font-family: "Poppins", sans-serif;
+  }
+  
+  /* Subtle animated background glow */
+  .portfolio-hero::before {
+    content: "";
+    position: absolute;
+    width: 150%;
+    height: 150%;
+    background: radial-gradient(circle at 30% 30%, rgba(0, 255, 150, 0.2), transparent 70%),
+                radial-gradient(circle at 70% 70%, rgba(0, 150, 255, 0.2), transparent 70%);
+    animation: bgMove 20s linear infinite;
+    z-index: 0;
+  }
+  
+  @keyframes bgMove {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-5%, -5%) scale(1.05); }
+    100% { transform: translate(0, 0) scale(1); }
+  }
+  
+  .portfolio-hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 900px;
+    padding: 2rem;
+    -webkit-animation: fadeInUp 1.2s ease-out;
+            animation: fadeInUp 1.2s ease-out;
+  }
+  
+  /* Fancy title with gradient and shine */
+  .portfolio-hero-content h1 {
+    font-size: 4rem;
+    background: -webkit-linear-gradient(45deg, #00ffa3, #00d4ff, #ff00f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 15px rgba(0, 255, 200, 0.2);
+    font-weight: 800;
+    margin-bottom: 1rem;
+    position: relative;
+    display: inline-block;
+  }
+  
+  /* Animated shine overlay on heading */
+  .portfolio-hero-content h1::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -75%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.3), transparent);
+    -webkit-transform: skewX(-25deg);
+            transform: skewX(-25deg);
+    -webkit-animation: shine 5s infinite;
+            animation: shine 5s infinite;
+  }
+  
+  @keyframes shine {
+    0% { left: -75%; }
+    100% { left: 125%; }
+  }
+  
+  .portfolio-hero-content p {
+    font-size: 1.25rem;
+    color: #cccccc;
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.6;
+    letter-spacing: 0.5px;
+    -webkit-animation: fadeIn 2s ease-in;
+            animation: fadeIn 2s ease-in;
+  }
+  
+  /* Button-like CTA under text */
+  .portfolio-hero-buttons {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+    gap: 1.2rem;
+    flex-wrap: wrap;
+  }
+  
+  .portfolio-hero-buttons a {
+    padding: 0.9rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    border-radius: 50px;
+    text-decoration: none;
+    background: linear-gradient(90deg, #00ffa3, #00d4ff, #ff00f7);
+    background-size: 300% 300%;
+    -webkit-animation: gradientMove 5s ease infinite;
+            animation: gradientMove 5s ease infinite;
+    box-shadow: 0 0 15px rgba(0, 200, 255, 0.4);
+    transition: all 0.3s ease;
+  }
+  
+  .portfolio-hero-buttons a:hover {
+    transform: scale(1.08);
+    box-shadow: 0 0 25px rgba(0, 200, 255, 0.7);
+  }
+  
+  /* Background gradient animation for buttons */
+  @keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  
+  /* Keyframe animations */
+  @-webkit-keyframes fadeInUp {
+    from { opacity: 0; -webkit-transform: translateY(40px); transform: translateY(40px); }
+    to { opacity: 1; -webkit-transform: translateY(0); transform: translateY(0); }
+  }
+  
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @-webkit-keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  /* Responsive Styles */
+  @media (max-width: 768px) {
+    .portfolio-hero-content h1 {
+      font-size: 2.5rem;
+    }
+  
+    .portfolio-hero-content p {
+      font-size: 1.1rem;
+    }
+  
+    .portfolio-hero-buttons a {
+      padding: 0.7rem 1.5rem;
+      font-size: 0.9rem;
+    }
+  }
+  
