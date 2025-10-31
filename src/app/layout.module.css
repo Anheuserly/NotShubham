@@ -1,0 +1,16 @@
+.body {
+  background-color: var(--amcmep-bg);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem; /* text-sm */
+  color: var(--amcmep-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.main {
+  flex-grow: 1;
+  padding: 1rem;
+  margin-left: auto;
+  margin-right: auto; /* Horizontal centering */
+  max-width: 1200px; /* Example max */
+}

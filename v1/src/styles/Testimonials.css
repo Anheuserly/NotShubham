@@ -1,0 +1,97 @@
+.testimonials-page {
+    background: linear-gradient(135deg, #0d0d0d, #1a1a1a);
+    color: #f8f9fa;
+    padding: 80px 20px;
+    text-align: center;
+    font-family: "Segoe UI", Roboto, sans-serif;
+  }
+  
+  .testimonials-page h2 {
+    font-size: 2.8rem;
+    margin-bottom: 15px;
+    background: -webkit-linear-gradient(45deg, #00c6ff, #0072ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .testimonials-intro {
+    font-size: 1.1rem;
+    color: #bbb;
+    margin-bottom: 40px;
+  }
+  
+  .testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 30px;
+    justify-content: center;
+    align-items: stretch;
+  }
+  
+  .testimonial-card {
+    background: rgba(30, 30, 30, 0.8);
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+  }
+  
+  .testimonial-card:hover {
+    transform: translateY(-12px) scale(1.03);
+    box-shadow: 0 12px 30px rgba(0, 195, 255, 0.4);
+  }
+  
+  .testimonial-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 18px;
+  }
+  
+  .testimonial-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid #00c6ff;
+    margin-right: 15px;
+  }
+  
+  .testimonial-info h4 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #fff;
+  }
+  
+  .testimonial-info p {
+    margin: 2px 0 0;
+    font-size: 0.95rem;
+    color: #aaa;
+  }
+  
+  .testimonial-text {
+    font-style: italic;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: #ddd;
+    margin-bottom: 15px;
+  }
+  
+  .testimonial-rating {
+    font-size: 1.3rem;
+    color: gold;
+    letter-spacing: 3px;
+    -webkit-text-stroke: 0.5px black;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .testimonial-card {
+      padding: 20px;
+    }
+    .testimonial-text {
+      font-size: 1rem;
+    }
+  }
+  

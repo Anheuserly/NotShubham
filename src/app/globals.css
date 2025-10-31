@@ -1,0 +1,366 @@
+@import "tailwindcss";
+
+/* Font Face Declaration */
+@font-face {
+  font-family: 'Ubin Sans';
+  src: url('/fonts/UbinSans-Variable.otf') format('opentype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Global font */
+body, html {
+  font-family: "Ubin Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+/* Hide default summary arrow in <details> */
+summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Checkerboard background for sections/cards */
+.checker-background::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-image: linear-gradient(#e6e6e690 1px, transparent 1px),
+                    linear-gradient(90deg, #e6e6e690 1px, transparent 1px);
+  background-size: 3.7em 3.7em;
+  mask-image: radial-gradient(ellipse at 50% 40%, black 0%, transparent 55%);
+  z-index: -1;
+  background-position-x: center;
+}
+
+/* Custom card shadow and hover */
+.card {
+  @apply relative bg-white rounded-2xl shadow-md p-6 transition-all duration-300 hover:shadow-xl;
+}
+
+/* Loader animation */
+.loader {
+  @apply animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600;
+}
+
+/* Scrollable tables/lists */
+.scrollable {
+  @apply overflow-x-auto max-w-full;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  @apply font-semibold text-gray-900;
+}
+
+p, span, li {
+  @apply text-gray-700;
+}
+
+/* Footer specific styles */
+.footer {
+  @apply relative bg-gradient-to-b from-gray-50 to-white pt-16 pb-8 mt-20 border-t border-gray-200;
+}
+
+.footer-container {
+  @apply container mx-auto px-4 relative z-10;
+}
+
+.footer-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12;
+}
+
+.company-logo {
+  @apply flex items-center space-x-3 mb-4;
+}
+
+.company-name {
+  @apply text-xl font-bold text-gray-900;
+}
+
+.company-description {
+  @apply text-gray-600 mb-6 max-w-xs;
+}
+
+.social-icons {
+  @apply flex space-x-4;
+}
+
+.social-icon {
+  @apply w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-indigo-100 hover:text-indigo-600 transition-colors duration-200;
+}
+
+.section-title {
+  @apply text-lg font-semibold text-gray-900 mb-4;
+}
+
+.service-areas {
+  @apply grid grid-cols-2 gap-2;
+}
+
+.area-item {
+  @apply text-gray-600 hover:text-indigo-600 transition-colors duration-200;
+}
+
+.quick-links {
+  @apply space-y-2;
+}
+
+.link {
+  @apply text-gray-600 hover:text-indigo-600 transition-colors duration-200;
+}
+
+.app-card {
+  @apply p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors duration-200;
+}
+
+.app-title {
+  @apply font-medium text-gray-900 mb-1;
+}
+
+.app-description {
+  @apply text-sm text-gray-600 mb-2;
+}
+
+.download-btn {
+  @apply inline-block text-sm bg-indigo-600 text-white px-3 py-1 rounded-lg hover:bg-indigo-700 transition-colors duration-200;
+}
+
+/* Contact Page Specific Styles */
+.contact-hero {
+  @apply relative overflow-hidden bg-gradient-to-br from-gray-50 to-white py-16;
+}
+
+.contact-hero::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(199, 210, 254, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(254, 202, 202, 0.2) 0%, transparent 50%);
+  z-index: 0;
+}
+
+.contact-container {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10;
+}
+
+.contact-grid {
+  @apply grid grid-cols-1 lg:grid-cols-3 gap-10;
+}
+
+.contact-info-card {
+  @apply relative bg-white rounded-2xl shadow-lg p-8 hover:shadow-xl transition-all duration-500;
+  background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+  border: 1px solid rgba(229, 231, 235, 0.5);
+}
+
+.contact-info-card::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
+  background: linear-gradient(135deg, #6366f1, #ec4899, #f59e0b);
+  border-radius: 1rem;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.contact-info-card:hover::before {
+  opacity: 1;
+}
+
+.contact-form-card {
+  @apply relative bg-white rounded-2xl shadow-lg p-8 lg:col-span-2;
+  background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+  border: 1px solid rgba(229, 231, 235, 0.5);
+}
+
+.contact-icon-wrapper {
+  @apply w-14 h-14 rounded-xl bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center mb-6;
+}
+
+.contact-icon {
+  @apply w-7 h-7 text-red-600;
+}
+
+.contact-detail-item {
+  @apply flex items-start space-x-4 mb-6;
+}
+
+.contact-detail-icon {
+  @apply w-6 h-6 text-red-600 mt-1 flex-shrink-0;
+}
+
+.contact-detail-content h3 {
+  @apply text-lg font-semibold text-gray-900 mb-1;
+}
+
+.contact-detail-content p {
+  @apply text-gray-600;
+}
+
+.business-hours {
+  @apply mt-8 pt-8 border-t border-gray-100;
+}
+
+.hours-item {
+  @apply flex justify-between py-2;
+}
+
+.hours-day {
+  @apply text-gray-600;
+}
+
+.hours-time {
+  @apply font-medium text-gray-900;
+}
+
+/* Form Elements */
+.contact-input {
+  @apply w-full border border-gray-200 rounded-xl px-5 py-3.5 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300;
+  background: rgba(249, 250, 251, 0.5);
+}
+
+.contact-input:focus {
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+}
+
+.contact-textarea {
+  @apply w-full border border-gray-200 rounded-xl px-5 py-3.5 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300 min-h-[150px];
+  background: rgba(249, 250, 251, 0.5);
+  resize: vertical;
+}
+
+.contact-textarea:focus {
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+}
+
+.contact-label {
+  @apply block text-sm font-medium text-gray-700 mb-2;
+}
+
+.contact-submit-btn {
+  @apply w-full bg-gradient-to-r from-red-600 to-red-700 text-white py-4 px-6 rounded-xl font-semibold hover:from-red-700 hover:to-red-800 transition-all duration-300 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.2), 0 2px 4px -1px rgba(239, 68, 68, 0.06);
+}
+
+.contact-submit-btn:hover {
+  box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.3), 0 4px 6px -2px rgba(239, 68, 68, 0.05);
+}
+
+/* Status Messages */
+.contact-status-success {
+  @apply bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-6;
+}
+
+.contact-status-error {
+  @apply bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6;
+}
+
+/* Loading Animation */
+.contact-loading-spinner {
+  @apply inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin;
+}
+
+/* Map Container */
+.contact-map-container {
+  @apply rounded-2xl overflow-hidden shadow-lg mt-12 h-80;
+  border: 1px solid rgba(229, 231, 235, 0.5);
+}
+
+/* Social Links */
+.contact-social-links {
+  @apply flex space-x-4 mt-8 pt-8 border-t border-gray-100;
+}
+
+.contact-social-link {
+  @apply w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-red-100 hover:text-red-600 transition-colors duration-300;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1023px) {
+  .contact-grid {
+    @apply gap-8;
+  }
+  
+  .contact-info-card,
+  .contact-form-card {
+    @apply p-6;
+  }
+}
+
+@media (max-width: 767px) {
+  .contact-hero {
+    @apply py-12;
+  }
+  
+  .contact-info-card,
+  .contact-form-card {
+    @apply p-5;
+  }
+  
+  .contact-icon-wrapper {
+    @apply w-12 h-12 mb-4;
+  }
+  
+  .contact-icon {
+    @apply w-6 h-6;
+  }
+}
+
+/* Animation Keyframes */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 40px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.contact-animate {
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+.contact-animate-delay-1 {
+  animation: fadeInUp 0.6s ease 0.1s forwards;
+  opacity: 0;
+}
+
+.contact-animate-delay-2 {
+  animation: fadeInUp 0.6s ease 0.2s forwards;
+  opacity: 0;
+}
+
+/* Pattern Background Variant */
+.contact-pattern-bg::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 15% 50%, rgba(239, 68, 68, 0.03) 0%, transparent 25%),
+    radial-gradient(circle at 85% 30%, rgba(239, 68, 68, 0.03) 0%, transparent 25%);
+  z-index: -1;
+}
+
+.copyright {
+  @apply text-center text-sm text-gray-500 pt-6 border-t border-gray-200;
+}
+
+.copyright-link {
+  @apply text-indigo-600 hover:text-indigo-800 transition-colors duration-200;
+}

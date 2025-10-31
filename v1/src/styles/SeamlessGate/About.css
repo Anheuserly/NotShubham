@@ -1,0 +1,31 @@
+.notshubham-about {
+    background: #111; /* Dark background for a modern look */
+    color: #f5f5f5;
+    padding: 50px 20px;
+    text-align: center;
+  }
+  
+  .about-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .about-title {
+    font-size: 2rem;
+    margin-bottom: 15px;
+    color: #ff4500; /* Stylish accent color */
+  }
+  
+  .about-content {
+    font-size: 1.1rem;
+    line-height: 1.6;
+  }
+  
+  .founder-highlight {
+    margin-top: 20px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    display: inline-block;
+    border-radius: 5px;
+  }
+  

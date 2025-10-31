@@ -1,0 +1,77 @@
+.about-hero {
+    position: relative;
+    height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+    padding: 20px;
+    overflow: hidden;
+  
+    /* Dark gradient background */
+    background: -webkit-linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  }
+  
+  .about-overlay {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(
+      circle at center,
+      rgba(0, 195, 255, 0.15),
+      transparent 70%
+    );
+    animation: rotateGlow 12s linear infinite;
+  }
+  
+  @keyframes rotateGlow {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  .about-content {
+    position: relative;
+    z-index: 1;
+    max-width: 800px;
+    padding: 20px;
+  }
+  
+  .about-content h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+    background: -webkit-linear-gradient(45deg, #00c6ff, #0072ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .about-content p {
+    font-size: 1.2rem;
+    color: #ccc;
+    line-height: 1.7;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .about-hero {
+      height: 60vh;
+      padding: 40px 15px;
+    }
+    .about-content h1 {
+      font-size: 2rem;
+    }
+    .about-content p {
+      font-size: 1rem;
+    }
+  }
+  

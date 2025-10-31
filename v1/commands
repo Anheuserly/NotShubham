@@ -1,0 +1,58 @@
+npx create-react-app .
+
+# Create subfolders inside src
+mkdir src/assets
+mkdir src/components
+mkdir src/pages
+mkdir src/services
+
+npm run build
+
+
+inetmg
+
+
+iisreset
+
+
+
+Site name: notshubham
+Physical path: C:\inetpub\wwwroot\notshubham
+Binding:
+Type: http
+IP Address: All Unassigned
+Port: 80
+Hostname: notshubham.com
+
+
+
+6️⃣ Point Your GoDaddy Domain to Your VPS
+Log in to GoDaddy.
+Go to My Products > Domains > notshubham.com.
+Click on DNS Management.
+Find the A Record for @ and update it with your VPS IP.
+Add a CNAME record:
+Name: www
+Value: notshubham.com
+Wait a few minutes to a few hours for the DNS to update.
+
+
+cd C:\win-acme.v2.2.9.1701.x64.pluggable
+
+wacs.exe
+
+
+N
+
+
+dism /online /enable-feature /featurename:IIS-WebServer /all /NoRestart
+
+npm install -g netlify-cli
+
+npm run build
+
+
+npm install -g vercel
+
+
+vercel
