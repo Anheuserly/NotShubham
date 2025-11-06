@@ -1,8 +1,8 @@
 "use client";
 
-import React, { FC, SVGProps, useRef, useMemo, Suspense, useState, useEffect, useCallback } from "react";
+import React, { FC, SVGProps, useRef, useMemo, Suspense, useState, useEffect, useCallback, createContext, useContext } from "react";
 import { Canvas, useFrame, extend, useThree } from '@react-three/fiber';
-import { Stars, OrbitControls, Line, Sphere, Text, useTexture, useGLTF, PerspectiveCamera, Environment, Sky, Cloud, Sparkles, Trail, Float } from '@react-three/drei';
+import { Stars, OrbitControls, Line, Sphere, Text, PerspectiveCamera, Environment, Sky, Cloud, Sparkles, Trail, Float, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { EffectComposer, Bloom, DepthOfField, GodRays, LensFlare, ChromaticAberration, Scanline, Vignette } from '@react-three/postprocessing';
 import { BlendFunction, KernelSize, Resolution } from 'postprocessing';
@@ -30,16 +30,14 @@ interface PlanetProps {
   hasRings?: boolean;
   atmosphereDensity?: number;
   moons?: MoonProps[];
-  textureUrl?: string;
-  bumpMapUrl?: string;
-  specularMapUrl?: string;
-  cloudMapUrl?: string;
   terrainIntensity?: number;
   isGasGiant?: boolean;
   mass?: number;
   temperature?: number;
   discoveryYear?: number;
   description?: string;
+  color?: string;
+  specularColor?: string;
 }
 
 interface MoonProps {
@@ -68,7 +66,7 @@ interface CameraState {
 // CONSTANTS AND CONFIGURATION
 // ----------------------------------------------------
 
-// Realistic planetary data with enhanced parameters
+// Realistic planetary data with enhanced parameters and colors
 const PLANET_DATA: PlanetProps[] = [
   {
     name: 'Sun',
@@ -81,6 +79,8 @@ const PLANET_DATA: PlanetProps[] = [
     axialTilt: 0,
     mass: 1.989e30,
     temperature: 5778,
+    color: '#FFD700',
+    specularColor: '#FF4500',
     description: 'The Sun is the star at the center of the Solar System. It is a nearly perfect sphere of hot plasma.'
   },
   {
@@ -92,11 +92,11 @@ const PLANET_DATA: PlanetProps[] = [
     rotationSpeed: 0.005,
     inclination: 7.0,
     axialTilt: 0.034,
-    textureUrl: '/textures/mercury/mercury_map.jpg',
-    bumpMapUrl: '/textures/mercury/mercury_bump.jpg',
     terrainIntensity: 2.0,
     mass: 3.301e23,
     temperature: 440,
+    color: '#8C7853',
+    specularColor: '#A52A2A',
     discoveryYear: -3000,
     description: 'Mercury is the smallest and innermost planet in the Solar System.'
   },
@@ -106,14 +106,14 @@ const PLANET_DATA: PlanetProps[] = [
     semiMajorAxis: 10.82,
     eccentricity: 0.007,
     orbitalPeriod: 0.62,
-    rotationSpeed: -0.001, // Retrograde rotation
+    rotationSpeed: -0.001,
     inclination: 3.4,
     axialTilt: 177.4,
-    textureUrl: '/textures/venus/venus_map.jpg',
-    cloudMapUrl: '/textures/venus/venus_clouds.jpg',
     atmosphereDensity: 0.9,
     mass: 4.867e24,
     temperature: 737,
+    color: '#FFC87C',
+    specularColor: '#FF6347',
     discoveryYear: -3000,
     description: 'Venus is the second planet from the Sun and is Earth\'s closest planetary neighbor.'
   },
@@ -126,10 +126,6 @@ const PLANET_DATA: PlanetProps[] = [
     rotationSpeed: 0.01,
     inclination: 0.0,
     axialTilt: 23.44,
-    textureUrl: '/textures/earth/earth_map.jpg',
-    bumpMapUrl: '/textures/earth/earth_bump.jpg',
-    specularMapUrl: '/textures/earth/earth_specular.jpg',
-    cloudMapUrl: '/textures/earth/earth_clouds.jpg',
     atmosphereDensity: 0.7,
     terrainIntensity: 1.5,
     moons: [
@@ -143,6 +139,8 @@ const PLANET_DATA: PlanetProps[] = [
     ],
     mass: 5.972e24,
     temperature: 288,
+    color: '#6B93D6',
+    specularColor: '#228B22',
     discoveryYear: -3000,
     description: 'Earth is the third planet from the Sun and the only astronomical object known to harbor life.'
   },
@@ -155,8 +153,6 @@ const PLANET_DATA: PlanetProps[] = [
     rotationSpeed: 0.009,
     inclination: 1.85,
     axialTilt: 25.19,
-    textureUrl: '/textures/mars/mars_map.jpg',
-    bumpMapUrl: '/textures/mars/mars_bump.jpg',
     terrainIntensity: 3.0,
     atmosphereDensity: 0.1,
     moons: [
@@ -177,6 +173,8 @@ const PLANET_DATA: PlanetProps[] = [
     ],
     mass: 6.39e23,
     temperature: 210,
+    color: '#CD5C5C',
+    specularColor: '#8B4513',
     discoveryYear: -3000,
     description: 'Mars is the fourth planet from the Sun and the second-smallest planet in the Solar System.'
   },
@@ -189,11 +187,12 @@ const PLANET_DATA: PlanetProps[] = [
     rotationSpeed: 0.02,
     inclination: 1.31,
     axialTilt: 3.13,
-    textureUrl: '/textures/jupiter/jupiter_map.jpg',
     atmosphereDensity: 0.8,
     isGasGiant: true,
     mass: 1.898e27,
     temperature: 165,
+    color: '#F0E68C',
+    specularColor: '#DAA520',
     discoveryYear: -3000,
     description: 'Jupiter is the fifth planet from the Sun and the largest in the Solar System.'
   },
@@ -206,12 +205,13 @@ const PLANET_DATA: PlanetProps[] = [
     rotationSpeed: 0.018,
     inclination: 2.49,
     axialTilt: 26.73,
-    textureUrl: '/textures/saturn/saturn_map.jpg',
     atmosphereDensity: 0.7,
     hasRings: true,
     isGasGiant: true,
     mass: 5.683e26,
     temperature: 134,
+    color: '#FFDEAD',
+    specularColor: '#B8860B',
     discoveryYear: -3000,
     description: 'Saturn is the sixth planet from the Sun and the second-largest in the Solar System.'
   },
@@ -221,14 +221,15 @@ const PLANET_DATA: PlanetProps[] = [
     semiMajorAxis: 287.1,
     eccentricity: 0.046,
     orbitalPeriod: 84.01,
-    rotationSpeed: -0.012, // Retrograde rotation
+    rotationSpeed: -0.012,
     inclination: 0.77,
     axialTilt: 97.77,
-    textureUrl: '/textures/uranus/uranus_map.jpg',
     atmosphereDensity: 0.6,
     isGasGiant: true,
     mass: 8.681e25,
     temperature: 76,
+    color: '#AFEEEE',
+    specularColor: '#48D1CC',
     discoveryYear: 1781,
     description: 'Uranus is the seventh planet from the Sun and has the third-largest planetary radius.'
   },
@@ -241,11 +242,12 @@ const PLANET_DATA: PlanetProps[] = [
     rotationSpeed: 0.015,
     inclination: 1.77,
     axialTilt: 28.32,
-    textureUrl: '/textures/neptune/neptune_map.jpg',
     atmosphereDensity: 0.7,
     isGasGiant: true,
     mass: 1.024e26,
     temperature: 72,
+    color: '#1E90FF',
+    specularColor: '#0000CD',
     discoveryYear: 1846,
     description: 'Neptune is the eighth and farthest-known Solar planet from the Sun.'
   }
@@ -361,18 +363,42 @@ const advancedNoiseFunctions = `
     }
     return value;
   }
+
+  // Cellular noise for gas giant patterns
+  float cellular(vec3 p) {
+    vec3 ip = floor(p);
+    vec3 fp = fract(p);
+    float minDist = 1.0;
+    
+    for (int z = -1; z <= 1; z++) {
+      for (int y = -1; y <= 1; y++) {
+        for (int x = -1; x <= 1; x++) {
+          vec3 neighbor = vec3(float(x), float(y), float(z));
+          vec3 point = snoise(ip + neighbor) * 0.5 + 0.5;
+          vec3 diff = neighbor + point - fp;
+          float dist = length(diff);
+          minDist = min(minDist, dist);
+        }
+      }
+    }
+    return minDist;
+  }
 `;
 
-// Advanced terrain shader
+// Advanced terrain shader with procedural textures
 const advancedTerrainVertexShader = `
   uniform float time;
   uniform float terrainIntensity;
   uniform float planetRadius;
+  uniform vec3 baseColor;
+  uniform vec3 specularColor;
+  uniform bool isGasGiant;
   
   varying vec3 vNormal;
   varying vec3 vWorldPosition;
   varying vec2 vUv;
   varying float vElevation;
+  varying vec3 vColor;
 
   ${advancedNoiseFunctions}
 
@@ -388,93 +414,116 @@ const advancedTerrainVertexShader = `
     float latitude = asin(position.y / planetRadius);
     float longitude = atan(position.z, position.x);
     
-    // Generate terrain using multiple noise layers
-    vec3 terrainPos = position * 2.0;
-    
-    // Base continent shape
-    float continent = fbm(terrainPos, 4, 2.0, 0.5);
-    continent = smoothstep(0.2, 0.8, continent);
-    
-    // Mountain ranges
-    float mountains = ridgedMF(terrainPos * 4.0 + time * 0.01, 6, 2.0, 0.5, 1.0);
-    
-    // Fine detail
-    float detail = snoise(terrainPos * 16.0) * 0.1;
-    
-    // Combine terrain layers
-    float elevation = continent * 0.3 + mountains * 0.15 + detail * 0.05;
-    elevation *= terrainIntensity;
-    vElevation = elevation;
+    if (isGasGiant) {
+      // Gas giant patterns
+      vec3 gasPos = position * 2.0;
+      float bands = sin(longitude * 8.0 + time * 0.1) * 0.5 + 0.5;
+      float cells = cellular(gasPos * 3.0);
+      float turbulence = fbm(gasPos * 4.0 + time * 0.05, 3, 2.0, 0.5);
+      
+      vElevation = bands * 0.3 + cells * 0.2 + turbulence * 0.1;
+      vColor = baseColor * (0.7 + bands * 0.3) + specularColor * cells;
+    } else {
+      // Rocky planet terrain
+      vec3 terrainPos = position * 2.0;
+      
+      // Base continent shape
+      float continent = fbm(terrainPos, 4, 2.0, 0.5);
+      continent = smoothstep(0.2, 0.8, continent);
+      
+      // Mountain ranges
+      float mountains = ridgedMF(terrainPos * 4.0 + time * 0.01, 6, 2.0, 0.5, 1.0);
+      
+      // Fine detail
+      float detail = snoise(terrainPos * 16.0) * 0.1;
+      
+      // Craters for some planets
+      float craters = 1.0 - cellular(terrainPos * 8.0) * 0.3;
+      
+      // Combine terrain layers
+      vElevation = (continent * 0.3 + mountains * 0.15 + detail * 0.05) * craters;
+      vElevation *= terrainIntensity;
+      
+      // Color based on elevation and features
+      float colorVariation = snoise(terrainPos * 8.0) * 0.3 + 0.7;
+      vColor = baseColor * colorVariation + specularColor * mountains * 0.2;
+    }
     
     // Displace vertex along normal
-    vec3 displacedPosition = position + normal * elevation;
+    vec3 displacedPosition = position + normal * vElevation;
     
     gl_Position = projectionMatrix * modelViewMatrix * vec4(displacedPosition, 1.0);
   }
 `;
 
 const advancedTerrainFragmentShader = `
-  uniform sampler2D diffuseMap;
-  uniform sampler2D bumpMap;
-  uniform sampler2D specularMap;
   uniform vec3 lightDirection;
   uniform float time;
   uniform vec3 atmosphereColor;
   uniform float atmosphereDensity;
+  uniform bool isGasGiant;
   
   varying vec3 vNormal;
   varying vec3 vWorldPosition;
   varying vec2 vUv;
   varying float vElevation;
+  varying vec3 vColor;
 
   ${advancedNoiseFunctions}
 
   void main() {
-    // Sample textures
-    vec4 diffuseColor = texture2D(diffuseMap, vUv);
-    vec3 bumpNormal = texture2D(bumpMap, vUv).rgb * 2.0 - 1.0;
-    float specularIntensity = texture2D(specularMap, vUv).r;
+    // Enhanced normal calculation
+    vec3 normal = normalize(vNormal);
     
-    // Enhanced normal with bump mapping
-    vec3 normal = normalize(vNormal + bumpNormal * 0.3);
-    
-    // Dynamic lighting based on elevation
+    // Dynamic lighting
     float NdotL = max(dot(normal, normalize(lightDirection)), 0.0);
     
-    // Elevation-based coloring
-    vec3 terrainColor = diffuseColor.rgb;
+    vec3 finalColor = vColor;
     
-    // Snow caps on high elevations
-    if (vElevation > 0.25) {
-      float snow = smoothstep(0.25, 0.3, vElevation);
-      terrainColor = mix(terrainColor, vec3(1.0), snow);
-    }
-    
-    // Water in low elevations
-    if (vElevation < 0.05) {
-      float water = smoothstep(0.05, 0.02, vElevation);
-      terrainColor = mix(terrainColor, vec3(0.1, 0.2, 0.8), water);
-      specularIntensity = mix(specularIntensity, 0.8, water);
+    if (!isGasGiant) {
+      // Rocky planet features
+      
+      // Snow caps on high elevations
+      if (vElevation > 0.25) {
+        float snow = smoothstep(0.25, 0.3, vElevation);
+        finalColor = mix(finalColor, vec3(1.0), snow);
+      }
+      
+      // Water in low elevations (for Earth-like planets)
+      if (vElevation < 0.05 && atmosphereDensity > 0.5) {
+        float water = smoothstep(0.05, 0.02, vElevation);
+        finalColor = mix(finalColor, vec3(0.1, 0.2, 0.8), water);
+      }
+      
+      // Volcanic regions (for high temperature planets)
+      if (vElevation > 0.2 && atmosphereDensity < 0.3) {
+        float volcanic = ridgedMF(vWorldPosition * 10.0, 3, 2.0, 0.5, 1.0);
+        finalColor = mix(finalColor, vec3(0.8, 0.2, 0.1), volcanic * 0.3);
+      }
+    } else {
+      // Gas giant animations
+      float dynamicPattern = sin(vUv.x * 20.0 + time * 0.2) * 0.1;
+      finalColor += dynamicPattern;
     }
     
     // Advanced lighting model
-    vec3 ambient = terrainColor * 0.1;
-    vec3 diffuse = terrainColor * NdotL;
+    vec3 ambient = finalColor * 0.1;
+    vec3 diffuse = finalColor * NdotL;
     
     // Specular highlights
     vec3 viewDir = normalize(-vWorldPosition);
     vec3 reflectDir = reflect(-normalize(lightDirection), normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
-    vec3 specular = vec3(0.5) * spec * specularIntensity;
+    vec3 specular = vec3(0.3) * spec;
     
     // Atmospheric scattering
     float fresnel = 1.0 - max(dot(viewDir, normal), 0.0);
     vec3 atmosphere = atmosphereColor * fresnel * atmosphereDensity;
     
     // Final color composition
-    vec3 finalColor = ambient + diffuse + specular + atmosphere;
+    vec3 final = ambient + diffuse + specular + atmosphere;
     
-    gl_FragColor = vec4(finalColor, 1.0);
+    gl_FragColor = vec4(final, 1.0);
   }
 `;
 
@@ -517,8 +566,11 @@ const advancedAtmosphereFragmentShader = `
     vec3 noisePos = vNormal * 5.0 + time * 0.01;
     float cloudNoise = snoise(noisePos) * 0.3 + 0.7;
     
+    // Aurora effect for planets with magnetic fields
+    float aurora = sin(vNormal.y * 10.0 + time * 0.3) * 0.2 + 0.8;
+    
     // Final atmosphere calculation
-    float atmosphere = fresnel * scatter * pulse * cloudNoise * atmosphereIntensity;
+    float atmosphere = fresnel * scatter * pulse * cloudNoise * aurora * atmosphereIntensity;
     
     // Color with depth variation
     vec3 color = atmosphereColor * atmosphere;
@@ -527,12 +579,47 @@ const advancedAtmosphereFragmentShader = `
   }
 `;
 
+// Ring system shader
+const ringFragmentShader = `
+  uniform float time;
+  uniform vec3 ringColor;
+  varying vec2 vUv;
+
+  ${advancedNoiseFunctions}
+
+  void main() {
+    float distanceFromCenter = length(vUv - 0.5) * 2.0;
+    
+    // Create ring patterns
+    float rings = sin(distanceFromCenter * 50.0 + time * 0.1) * 0.3 + 0.7;
+    float gaps = step(0.3, fract(distanceFromCenter * 20.0));
+    
+    // Add some noise for realism
+    float noise = snoise(vec3(vUv * 10.0, time * 0.05)) * 0.2 + 0.8;
+    
+    float alpha = rings * gaps * noise;
+    alpha *= 1.0 - smoothstep(0.8, 1.0, distanceFromCenter);
+    
+    vec3 color = ringColor * alpha;
+    
+    gl_FragColor = vec4(color, alpha * 0.8);
+  }
+`;
+
 // ----------------------------------------------------
-// CUSTOM HOOKS
+// CAMERA CONTEXT AND CONTROLLER (INSIDE CANVAS)
 // ----------------------------------------------------
 
-const useCameraController = () => {
-  const { camera, gl } = useThree();
+interface CameraContextType {
+  focusOnPlanet: (planetName: string, planetPosition: THREE.Vector3, planetSize: number) => void;
+  enterSurfaceView: (planetName: string, planetPosition: THREE.Vector3, planetSize: number) => void;
+  resetCamera: () => void;
+}
+
+const CameraContext = createContext<CameraContextType | null>(null);
+
+const CameraController: FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { camera } = useThree();
   const [cameraState, setCameraState] = useState<CameraState>({
     mode: 'free',
     target: null,
@@ -585,18 +672,35 @@ const useCameraController = () => {
     camera.lookAt(camera.position.clone().add(newLookAt));
   });
 
-  return {
-    cameraState,
+  const contextValue = useMemo(() => ({
     focusOnPlanet,
     enterSurfaceView,
     resetCamera
-  };
+  }), [focusOnPlanet, enterSurfaceView, resetCamera]);
+
+  return (
+    <CameraContext.Provider value={contextValue}>
+      {children}
+    </CameraContext.Provider>
+  );
 };
+
+// Hook to use camera controls within Canvas
+const useCamera = () => {
+  const context = useContext(CameraContext);
+  if (!context) {
+    throw new Error('useCamera must be used within a CameraController');
+  }
+  return context;
+};
+
+// ----------------------------------------------------
+// CUSTOM HOOKS
+// ----------------------------------------------------
 
 const usePlanetaryPhysics = (semiMajorAxis: number, eccentricity: number, orbitalPeriod: number, inclination: number) => {
   const orbitRef = useRef<THREE.Group>(null!);
   const TIME_SCALE = 0.00001;
-  const G = 6.67430e-11; // Gravitational constant
 
   const meanMotion = useMemo(() => (2 * Math.PI) / orbitalPeriod, [orbitalPeriod]);
 
@@ -634,16 +738,12 @@ const usePlanetaryPhysics = (semiMajorAxis: number, eccentricity: number, orbita
 // ADVANCED COMPONENTS
 // ----------------------------------------------------
 
-// Enhanced Planet Material with multiple texture support
+// Enhanced Planet Material with procedural generation
 const AdvancedPlanetMaterial: FC<{ planetData: PlanetProps }> = ({ planetData }) => {
-  const [diffuseMap, bumpMap, specularMap] = useTexture([
-    planetData.textureUrl || '/textures/fallback/fallback_diffuse.jpg',
-    planetData.bumpMapUrl || '/textures/fallback/fallback_bump.jpg',
-    planetData.specularMapUrl || '/textures/fallback/fallback_specular.jpg'
-  ]);
-
   const shaderRef = useRef<THREE.ShaderMaterial>(null!);
   const lightDirection = useMemo(() => new THREE.Vector3(1, 1, 1).normalize(), []);
+  const baseColor = useMemo(() => new THREE.Color(planetData.color || '#808080'), [planetData.color]);
+  const specularColor = useMemo(() => new THREE.Color(planetData.specularColor || '#FFFFFF'), [planetData.specularColor]);
 
   useFrame(({ clock }) => {
     if (shaderRef.current) {
@@ -660,12 +760,12 @@ const AdvancedPlanetMaterial: FC<{ planetData: PlanetProps }> = ({ planetData })
         time: { value: 0 },
         terrainIntensity: { value: planetData.terrainIntensity || 1.0 },
         planetRadius: { value: planetData.size },
-        diffuseMap: { value: diffuseMap },
-        bumpMap: { value: bumpMap },
-        specularMap: { value: specularMap },
         lightDirection: { value: lightDirection },
         atmosphereColor: { value: new THREE.Color(0.4, 0.6, 1.0) },
-        atmosphereDensity: { value: planetData.atmosphereDensity || 0.0 }
+        atmosphereDensity: { value: planetData.atmosphereDensity || 0.0 },
+        baseColor: { value: baseColor },
+        specularColor: { value: specularColor },
+        isGasGiant: { value: planetData.isGasGiant || false }
       }}
     />
   );
@@ -680,6 +780,10 @@ const AdvancedAtmosphere: FC<{ planetData: PlanetProps }> = ({ planetData }) => 
       case 'Earth': return new THREE.Color(0.2, 0.4, 1.0);
       case 'Venus': return new THREE.Color(1.0, 0.8, 0.6);
       case 'Mars': return new THREE.Color(1.0, 0.4, 0.2);
+      case 'Jupiter': return new THREE.Color(0.9, 0.7, 0.5);
+      case 'Saturn': return new THREE.Color(0.95, 0.85, 0.7);
+      case 'Uranus': return new THREE.Color(0.6, 0.8, 0.9);
+      case 'Neptune': return new THREE.Color(0.2, 0.3, 0.8);
       default: return new THREE.Color(0.4, 0.6, 1.0);
     }
   }, [planetData.name]);
@@ -711,46 +815,93 @@ const AdvancedAtmosphere: FC<{ planetData: PlanetProps }> = ({ planetData }) => 
   );
 };
 
-// Cloud Layer Component
+// Procedural Cloud Layer
 const CloudLayer: FC<{ planetData: PlanetProps }> = ({ planetData }) => {
-  const cloudMap = useTexture(planetData.cloudMapUrl || '/textures/fallback/fallback_clouds.jpg');
+  const shaderRef = useRef<THREE.ShaderMaterial>(null!);
   
+  useFrame(({ clock }) => {
+    if (shaderRef.current) {
+      shaderRef.current.uniforms.time.value = clock.getElapsedTime();
+    }
+  });
+
   return (
     <mesh scale={1.05}>
       <sphereGeometry args={[1, 64, 64]} />
-      <meshPhongMaterial
-        map={cloudMap}
+      <shaderMaterial
+        ref={shaderRef}
+        vertexShader={`
+          uniform float time;
+          varying vec2 vUv;
+          varying vec3 vNormal;
+          ${advancedNoiseFunctions}
+          
+          void main() {
+            vUv = uv;
+            vNormal = normal;
+            
+            // Animate cloud movement
+            vec3 displaced = position + normal * snoise(position * 2.0 + time * 0.1) * 0.02;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(displaced, 1.0);
+          }
+        `}
+        fragmentShader={`
+          uniform float time;
+          varying vec2 vUv;
+          varying vec3 vNormal;
+          ${advancedNoiseFunctions}
+          
+          void main() {
+            // Cloud patterns using multiple noise layers
+            vec3 cloudPos = vec3(vUv * 5.0, time * 0.05);
+            float clouds = fbm(cloudPos, 4, 2.0, 0.5);
+            clouds = smoothstep(0.3, 0.7, clouds);
+            
+            // Add some detail
+            float detail = snoise(cloudPos * 10.0) * 0.3 + 0.7;
+            clouds *= detail;
+            
+            gl_FragColor = vec4(1.0, 1.0, 1.0, clouds * 0.6);
+          }
+        `}
         transparent={true}
-        opacity={0.6}
-        side={THREE.DoubleSide}
+        uniforms={{ time: { value: 0 } }}
       />
     </mesh>
   );
 };
 
-// Enhanced Ring System for Saturn
+// Enhanced Ring System with procedural generation
 const AdvancedRingSystem: FC<{ planetData: PlanetProps }> = ({ planetData }) => {
-  const ringTexture = useTexture('/textures/saturn/saturn_rings.png');
-  
+  const shaderRef = useRef<THREE.ShaderMaterial>(null!);
+  const ringColor = useMemo(() => new THREE.Color(planetData.specularColor || '#DAA520'), [planetData.specularColor]);
+
+  useFrame(({ clock }) => {
+    if (shaderRef.current) {
+      shaderRef.current.uniforms.time.value = clock.getElapsedTime();
+    }
+  });
+
   return (
     <group rotation={[Math.PI / 2, 0, 0]}>
       <mesh rotation={[0, 0, 0]}>
         <ringGeometry args={[1.2, 3.5, 128]} />
-        <meshBasicMaterial
-          map={ringTexture}
+        <shaderMaterial
+          ref={shaderRef}
+          vertexShader={`
+            varying vec2 vUv;
+            void main() {
+              vUv = uv;
+              gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+          `}
+          fragmentShader={ringFragmentShader}
           transparent={true}
           side={THREE.DoubleSide}
-          opacity={0.8}
-        />
-      </mesh>
-      {/* Inner detailed rings */}
-      <mesh rotation={[0, 0, 0.1]}>
-        <ringGeometry args={[1.5, 2.8, 256]} />
-        <meshBasicMaterial
-          map={ringTexture}
-          transparent={true}
-          side={THREE.DoubleSide}
-          opacity={0.6}
+          uniforms={{
+            time: { value: 0 },
+            ringColor: { value: ringColor }
+          }}
         />
       </mesh>
     </group>
@@ -786,7 +937,11 @@ const MoonComponent: FC<{ moon: MoonProps, planetSize: number, index: number }> 
   return (
     <group ref={orbitRef}>
       <Sphere args={[moon.size, 32, 32]}>
-        <meshStandardMaterial color="gray" roughness={0.8} />
+        <meshStandardMaterial 
+          color="#888888" 
+          roughness={0.8}
+          metalness={0.1}
+        />
       </Sphere>
       {/* Moon orbit line */}
       <Line
@@ -860,7 +1015,7 @@ const EnhancedPlanet: FC<{ planetData: PlanetProps }> = ({ planetData }) => {
     planetData.inclination
   );
 
-  const { focusOnPlanet, enterSurfaceView } = useCameraController();
+  const { focusOnPlanet, enterSurfaceView } = useCamera();
 
   useFrame(() => {
     if (meshRef.current) {
@@ -926,8 +1081,8 @@ const EnhancedPlanet: FC<{ planetData: PlanetProps }> = ({ planetData }) => {
           <AdvancedAtmosphere planetData={planetData} />
         )}
 
-        {/* Cloud layer */}
-        {planetData.cloudMapUrl && (
+        {/* Cloud layer for planets with thick atmosphere */}
+        {planetData.atmosphereDensity && planetData.atmosphereDensity > 0.5 && planetData.name !== 'Sun' && (
           <CloudLayer planetData={planetData} />
         )}
 
@@ -956,36 +1111,69 @@ const EnhancedPlanet: FC<{ planetData: PlanetProps }> = ({ planetData }) => {
   );
 };
 
-// Enhanced Sun Component
+// Enhanced Sun Component with procedural solar features
 const EnhancedSun: FC = () => {
   const sunData = PLANET_DATA.find(p => p.name === 'Sun')!;
   const meshRef = useRef<THREE.Mesh>(null!);
+  const shaderRef = useRef<THREE.ShaderMaterial>(null!);
   
   useFrame(({ clock }) => {
     if (meshRef.current) {
-      // Solar surface animation
       meshRef.current.rotation.y += sunData.rotationSpeed;
-      
-      // Pulsating effect
-      const scale = 1 + Math.sin(clock.getElapsedTime() * 2) * 0.01;
-      meshRef.current.scale.setScalar(scale);
+    }
+    if (shaderRef.current) {
+      shaderRef.current.uniforms.time.value = clock.getElapsedTime();
     }
   });
 
   return (
     <mesh ref={meshRef}>
       <sphereGeometry args={[sunData.size, 128, 128]} />
-      
-      {/* CORRECTED: Use meshStandardMaterial instead of meshBasicMaterial */}
-      <meshStandardMaterial
-        color={new THREE.Color(1, 0.8, 0.2)}
-        emissive={new THREE.Color(1, 0.4, 0.1)}
-        emissiveIntensity={2}
-        roughness={0.1}
-        metalness={0}
+      <shaderMaterial
+        ref={shaderRef}
+        vertexShader={`
+          uniform float time;
+          varying vec3 vNormal;
+          varying vec2 vUv;
+          ${advancedNoiseFunctions}
+          
+          void main() {
+            vNormal = normal;
+            vUv = uv;
+            
+            // Solar surface turbulence
+            vec3 displaced = position + normal * snoise(position * 3.0 + time * 0.5) * 0.1;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(displaced, 1.0);
+          }
+        `}
+        fragmentShader={`
+          uniform float time;
+          varying vec3 vNormal;
+          varying vec2 vUv;
+          ${advancedNoiseFunctions}
+          
+          void main() {
+            // Solar surface patterns
+            float turbulence = fbm(vNormal * 5.0 + time * 0.2, 3, 2.0, 0.5);
+            float granules = cellular(vNormal * 8.0 + time * 0.1);
+            
+            // Core and corona colors
+            vec3 coreColor = vec3(1.0, 0.8, 0.2);
+            vec3 coronaColor = vec3(1.0, 0.4, 0.1);
+            
+            // Mix colors based on patterns
+            vec3 finalColor = mix(coreColor, coronaColor, turbulence * granules);
+            
+            // Add some brightness variation
+            float brightness = 0.8 + turbulence * 0.4;
+            
+            gl_FragColor = vec4(finalColor * brightness, 1.0);
+          }
+        `}
+        uniforms={{ time: { value: 0 } }}
       />
       
-      {/* Solar corona - also fix this if it has similar issues */}
+      {/* Solar corona */}
       <mesh scale={1.2}>
         <sphereGeometry args={[1, 64, 64]} />
         <shaderMaterial
@@ -1091,87 +1279,91 @@ const Galaxy: FC = () => {
 };
 
 // ----------------------------------------------------
-// UI COMPONENTS
+// UI COMPONENTS (INSIDE CANVAS)
 // ----------------------------------------------------
 
 const PlanetInfoPanel: FC<{ planetData: PlanetProps | null }> = ({ planetData }) => {
   if (!planetData) return null;
 
   return (
-    <div className="absolute top-8 left-8 z-20 p-6 rounded-xl bg-gray-900/80 backdrop-blur-md text-white max-w-md">
-      <h2 className="text-2xl font-bold mb-4">{planetData.name}</h2>
-      <div className="space-y-2 text-sm">
-        <div className="flex justify-between">
-          <span>Diameter:</span>
-          <span>{(planetData.size * 2).toFixed(2)} units</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Orbital Period:</span>
-          <span>{planetData.orbitalPeriod} years</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Mass:</span>
-          <span>{(planetData.mass! / 1.989e30).toFixed(6)} M☉</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Temperature:</span>
-          <span>{planetData.temperature} K</span>
-        </div>
-        {planetData.discoveryYear && (
+    <Html fullscreen>
+      <div className="absolute top-8 left-8 z-20 p-6 rounded-xl bg-gray-900/80 backdrop-blur-md text-white max-w-md">
+        <h2 className="text-2xl font-bold mb-4">{planetData.name}</h2>
+        <div className="space-y-2 text-sm">
           <div className="flex justify-between">
-            <span>Discovered:</span>
-            <span>{planetData.discoveryYear > 0 ? planetData.discoveryYear : `${Math.abs(planetData.discoveryYear)} BCE`}</span>
+            <span>Diameter:</span>
+            <span>{(planetData.size * 2).toFixed(2)} units</span>
           </div>
-        )}
+          <div className="flex justify-between">
+            <span>Orbital Period:</span>
+            <span>{planetData.orbitalPeriod} years</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Mass:</span>
+            <span>{(planetData.mass! / 1.989e30).toFixed(6)} M☉</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Temperature:</span>
+            <span>{planetData.temperature} K</span>
+          </div>
+          {planetData.discoveryYear && (
+            <div className="flex justify-between">
+              <span>Discovered:</span>
+              <span>{planetData.discoveryYear > 0 ? planetData.discoveryYear : `${Math.abs(planetData.discoveryYear)} BCE`}</span>
+            </div>
+          )}
+        </div>
+        <p className="mt-4 text-gray-300 text-xs">{planetData.description}</p>
+        
+        <div className="mt-4 flex space-x-2">
+          <button className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition-colors">
+            View Details
+          </button>
+          <button className="border border-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm transition-colors">
+            Compare
+          </button>
+        </div>
       </div>
-      <p className="mt-4 text-gray-300 text-xs">{planetData.description}</p>
-      
-      <div className="mt-4 flex space-x-2">
-        <button className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition-colors">
-          View Details
-        </button>
-        <button className="border border-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm transition-colors">
-          Compare
-        </button>
-      </div>
-    </div>
+    </Html>
   );
 };
 
 const NavigationPanel: FC = () => {
-  const { resetCamera } = useCameraController();
+  const { resetCamera } = useCamera();
   const [selectedPlanet, setSelectedPlanet] = useState<string>('Sun');
 
   return (
-    <div className="absolute bottom-8 left-8 z-20 p-6 rounded-xl bg-gray-900/80 backdrop-blur-md text-white">
-      <h3 className="text-lg font-semibold mb-4">Navigation</h3>
-      
-      <div className="grid grid-cols-3 gap-2 mb-4">
-        {PLANET_DATA.map(planet => (
-          <button
-            key={planet.name}
-            onClick={() => setSelectedPlanet(planet.name)}
-            className={`px-3 py-2 rounded-lg text-sm transition-colors ${
-              selectedPlanet === planet.name ? 'bg-blue-600' : 'bg-gray-700 hover:bg-gray-600'
-            }`}
+    <Html fullscreen>
+      <div className="absolute bottom-8 left-8 z-20 p-6 rounded-xl bg-gray-900/80 backdrop-blur-md text-white">
+        <h3 className="text-lg font-semibold mb-4">Navigation</h3>
+        
+        <div className="grid grid-cols-3 gap-2 mb-4">
+          {PLANET_DATA.map(planet => (
+            <button
+              key={planet.name}
+              onClick={() => setSelectedPlanet(planet.name)}
+              className={`px-3 py-2 rounded-lg text-sm transition-colors ${
+                selectedPlanet === planet.name ? 'bg-blue-600' : 'bg-gray-700 hover:bg-gray-600'
+              }`}
+            >
+              {planet.name}
+            </button>
+          ))}
+        </div>
+        
+        <div className="flex space-x-2">
+          <button 
+            onClick={resetCamera}
+            className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-sm transition-colors flex-1"
           >
-            {planet.name}
+            Reset View
           </button>
-        ))}
+          <button className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-sm transition-colors flex-1">
+            Tour Mode
+          </button>
+        </div>
       </div>
-      
-      <div className="flex space-x-2">
-        <button 
-          onClick={resetCamera}
-          className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-sm transition-colors flex-1"
-        >
-          Reset View
-        </button>
-        <button className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-sm transition-colors flex-1">
-          Tour Mode
-        </button>
-      </div>
-    </div>
+    </Html>
   );
 };
 
@@ -1182,59 +1374,61 @@ const ControlPanel: FC = () => {
   const [graphicsQuality, setGraphicsQuality] = useState('high');
 
   return (
-    <div className="absolute top-8 right-8 z-20 p-6 rounded-xl bg-gray-900/80 backdrop-blur-md text-white max-w-xs">
-      <h3 className="text-lg font-semibold mb-4">Controls</h3>
-      
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm mb-2">Time Scale</label>
-          <input
-            type="range"
-            min="0"
-            max="1000"
-            value={timeScale}
-            onChange={(e) => setTimeScale(Number(e.target.value))}
-            className="w-full"
-          />
-          <div className="text-xs text-gray-400 mt-1">{timeScale}x</div>
-        </div>
+    <Html fullscreen>
+      <div className="absolute top-8 right-8 z-20 p-6 rounded-xl bg-gray-900/80 backdrop-blur-md text-white max-w-xs">
+        <h3 className="text-lg font-semibold mb-4">Controls</h3>
         
-        <div className="space-y-2">
-          <label className="flex items-center">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm mb-2">Time Scale</label>
             <input
-              type="checkbox"
-              checked={showOrbits}
-              onChange={(e) => setShowOrbits(e.target.checked)}
-              className="mr-2"
+              type="range"
+              min="0"
+              max="1000"
+              value={timeScale}
+              onChange={(e) => setTimeScale(Number(e.target.value))}
+              className="w-full"
             />
-            Show Orbits
-          </label>
-          <label className="flex items-center">
-            <input
-              type="checkbox"
-              checked={showLabels}
-              onChange={(e) => setShowLabels(e.target.checked)}
-              className="mr-2"
-            />
-            Show Labels
-          </label>
-        </div>
-        
-        <div>
-          <label className="block text-sm mb-2">Graphics Quality</label>
-          <select
-            value={graphicsQuality}
-            onChange={(e) => setGraphicsQuality(e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm"
-          >
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-            <option value="ultra">Ultra</option>
-          </select>
+            <div className="text-xs text-gray-400 mt-1">{timeScale}x</div>
+          </div>
+          
+          <div className="space-y-2">
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={showOrbits}
+                onChange={(e) => setShowOrbits(e.target.checked)}
+                className="mr-2"
+              />
+              Show Orbits
+            </label>
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={showLabels}
+                onChange={(e) => setShowLabels(e.target.checked)}
+                className="mr-2"
+              />
+              Show Labels
+            </label>
+          </div>
+          
+          <div>
+            <label className="block text-sm mb-2">Graphics Quality</label>
+            <select
+              value={graphicsQuality}
+              onChange={(e) => setGraphicsQuality(e.target.value)}
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm"
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="ultra">Ultra</option>
+            </select>
+          </div>
         </div>
       </div>
-    </div>
+    </Html>
   );
 };
 
@@ -1244,6 +1438,7 @@ const ControlPanel: FC = () => {
 
 const AdvancedSolarSystem: FC = () => {
   const sceneRef = useRef<THREE.Group>(null!);
+  const [selectedPlanet, setSelectedPlanet] = useState<PlanetProps | null>(null);
   const spacecrafts = useMemo(() => [
     { position: [20, 5, 10] as [number, number, number], targetPlanet: 'Mars', speed: 0.5, missionType: 'orbiter' as const },
     { position: [40, -8, 25] as [number, number, number], targetPlanet: 'Jupiter', speed: 0.3, missionType: 'flyby' as const },
@@ -1251,29 +1446,36 @@ const AdvancedSolarSystem: FC = () => {
   ], []);
 
   return (
-    <group ref={sceneRef}>
-      {/* Background elements */}
-      <Galaxy />
-      <Stars radius={500} depth={100} count={20000} factor={8} saturation={0.5} fade speed={2} />
-      
-      {/* Central star */}
-      <EnhancedSun />
-      <SolarFlares />
-      
-      {/* Planets */}
-      {PLANET_DATA.filter(planet => planet.name !== 'Sun').map(planet => (
-        <EnhancedPlanet key={planet.name} planetData={planet} />
-      ))}
-      
-      {/* Spacecrafts */}
-      {spacecrafts.map((spacecraft, index) => (
-        <Spacecraft key={index} {...spacecraft} />
-      ))}
-      
-      {/* Ambient lighting */}
-      <ambientLight intensity={0.1} />
-      <pointLight position={[0, 0, 0]} intensity={2} distance={1000} />
-    </group>
+    <CameraController>
+      <group ref={sceneRef}>
+        {/* Background elements */}
+        <Galaxy />
+        <Stars radius={500} depth={100} count={20000} factor={8} saturation={0.5} fade speed={2} />
+        
+        {/* Central star */}
+        <EnhancedSun />
+        <SolarFlares />
+        
+        {/* Planets */}
+        {PLANET_DATA.filter(planet => planet.name !== 'Sun').map(planet => (
+          <EnhancedPlanet key={planet.name} planetData={planet} />
+        ))}
+        
+        {/* Spacecrafts */}
+        {spacecrafts.map((spacecraft, index) => (
+          <Spacecraft key={index} {...spacecraft} />
+        ))}
+        
+        {/* UI Components */}
+        <PlanetInfoPanel planetData={selectedPlanet} />
+        <NavigationPanel />
+        <ControlPanel />
+        
+        {/* Ambient lighting */}
+        <ambientLight intensity={0.1} />
+        <pointLight position={[0, 0, 0]} intensity={2} distance={1000} />
+      </group>
+    </CameraController>
   );
 };
 
@@ -1310,7 +1512,6 @@ const PostProcessingEffects: FC = () => {
 // ----------------------------------------------------
 
 const HomePage: FC = () => {
-  const [selectedPlanet, setSelectedPlanet] = useState<PlanetProps | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -1325,7 +1526,7 @@ const HomePage: FC = () => {
         <div className="text-white text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
           <p className="text-xl">Loading Cosmic Experience...</p>
-          <p className="text-gray-400 mt-2">Initializing advanced simulation</p>
+          <p className="text-gray-400 mt-2">Initializing procedural generation</p>
         </div>
       </div>
     );
@@ -1363,19 +1564,15 @@ const HomePage: FC = () => {
         </Suspense>
       </Canvas>
 
-      {/* UI Overlay */}
+      {/* Static UI Overlay */}
       <div className="absolute inset-0 pointer-events-none">
-        <PlanetInfoPanel planetData={selectedPlanet} />
-        <NavigationPanel />
-        <ControlPanel />
-        
         {/* Main Title */}
         <div className="absolute top-0 left-1/2 transform -translate-x-1/2 p-8 text-white text-center pointer-events-none">
           <h1 className="text-6xl font-light tracking-wider mb-2 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
             INTERSTELLAR EXPLORER
           </h1>
           <p className="text-lg text-gray-300">
-            Advanced 3D Solar System Simulation • Real-time Physics • High-resolution Textures
+            Advanced 3D Solar System Simulation • Procedural Generation • Real-time Physics
           </p>
         </div>
 
@@ -1384,7 +1581,7 @@ const HomePage: FC = () => {
           <div className="flex space-x-6">
             <span>🛰️ 3 Active Spacecraft</span>
             <span>⭐ 8 Planets + 200+ Moons</span>
-            <span>🎯 Keplerian Orbits Enabled</span>
+            <span>🎯 Procedural Textures</span>
             <span>🌌 20,000+ Stars Rendered</span>
           </div>
         </div>
