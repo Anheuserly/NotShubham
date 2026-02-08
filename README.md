@@ -1,42 +1,69 @@
-# Next.js starter kit with Appwrite
+# Notshubham - CityTalk 3D Plaza
 
-Kickstart your Next.js development with this ready-to-use starter project integrated with [Appwrite](https://www.appwrite.io)
+A shared 3D city plaza where anyone can join, move with WASD, and chat in real time. Messages float above each character until their next message.
 
-## 🚀Getting started
+## Features
 
-###
-Clone the Project
-Clone this repository to your local machine using Git:
+- 3D realtime plaza with low-poly buildings
+- WASD / arrow key movement
+- Always-on chat bubbles above characters
+- Guest + email/password authentication (Appwrite)
+- Customizable avatars (skin, hair, outfit colors)
+- Realtime presence via Appwrite documents + subscriptions
 
-`git clone https://github.com/appwrite/starter-for-nextjs`
+## Appwrite Setup
 
-## 🛠️ Development guid
-1. **Configure Appwrite**<br/>
-   Navigate to `.env` and update the values to match your Appwrite project credentials.
-2. **Customize as needed**<br/>
-   Modify the starter kit to suit your app's requirements. Adjust UI, features, or backend
-   integrations as per your needs.
-3. **Install dependencies**<br/>
-   Run `npm install` to install all dependencies.
-4. **Run the app**<br/>
-   Start the project by running `npm run dev`.
+Create a project, database, and two collections:
 
-## 💡 Additional notes
-- This starter project is designed to streamline your Next.js development with Appwrite.
-- Refer to the [Appwrite documentation](https://appwrite.io/docs) for detailed integration guidance.
+### Collection: `messages`
+Attributes:
+- `text` (string)
+- `name` (string)
+- `userId` (string)
+- `isGuest` (boolean)
+- `createdAt` (string)
 
-npx next build 
-https://www.amcmep.in/sitemap.xml
-https://www.amcmep.in/robots.txt
+Permissions (suggested):
+- Read: `role:all`
+- Create: `role:users`
 
-What this setup gives you:
+### Collection: `profiles`
+Attributes:
+- `userId` (string)
+- `name` (string)
+- `x` (float)
+- `z` (float)
+- `avatarSkin` (string)
+- `avatarHair` (string)
+- `avatarOutfit` (string)
+- `lastMessage` (string)
+- `updatedAt` (string)
 
-SEO metadata → Optimized <head> with OG + Twitter.
+Permissions (suggested):
+- Read: `role:all`
+- Create: `role:users`
+- Update: `role:users`
 
-JSON-LD schema → LocalBusiness + FAQPage + About/Contact/Partners.
+## Environment
 
-Sitemap → All important pages submitted to Google.
+Create `.env.local`:
 
-Robots.txt → Allows crawling & points to sitemap.
+```bash
+NEXT_PUBLIC_APPWRITE_ENDPOINT="https://cloud.appwrite.io/v1"
+NEXT_PUBLIC_APPWRITE_PROJECT_ID="YOUR_PROJECT_ID"
+NEXT_PUBLIC_APPWRITE_DATABASE_ID="YOUR_DATABASE_ID"
+NEXT_PUBLIC_APPWRITE_MESSAGES_COLLECTION_ID="YOUR_MESSAGES_COLLECTION_ID"
+NEXT_PUBLIC_APPWRITE_PROFILES_COLLECTION_ID="YOUR_PROFILES_COLLECTION_ID"
+```
 
-Ready for Google Business Profile integration → Once you create GBP, Google will connect it to your site.
+## Development
+
+```bash
+npm install
+npm run dev
+```
+
+## Notes
+
+- Guest sessions are created automatically when someone sends their first message.
+- Position updates are throttled to avoid spamming Appwrite.

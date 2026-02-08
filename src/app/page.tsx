@@ -1,1593 +1,944 @@
 "use client";
 
-import React, { FC, SVGProps, useRef, useMemo, Suspense, useState, useEffect, useCallback, createContext, useContext } from "react";
-import { Canvas, useFrame, extend, useThree } from '@react-three/fiber';
-import { Stars, OrbitControls, Line, Sphere, Text, PerspectiveCamera, Environment, Sky, Cloud, Sparkles, Trail, Float, Html } from '@react-three/drei';
-import * as THREE from 'three';
-import { EffectComposer, Bloom, DepthOfField, GodRays, LensFlare, ChromaticAberration, Scanline, Vignette } from '@react-three/postprocessing';
-import { BlendFunction, KernelSize, Resolution } from 'postprocessing';
+import { useEffect, useMemo, useRef, useState } from "react";
 
-// Extend THREE for use in JSX
-extend({ 
-  Color: THREE.Color,
-  Vector3: THREE.Vector3,
-  Group: THREE.Group
-});
-
-// ----------------------------------------------------
-// TYPES AND INTERFACES
-// ----------------------------------------------------
-
-interface PlanetProps {
-  name: string;
-  size: number;
-  semiMajorAxis: number;
-  eccentricity: number;
-  orbitalPeriod: number;
-  rotationSpeed: number;
-  inclination: number;
-  axialTilt: number;
-  hasRings?: boolean;
-  atmosphereDensity?: number;
-  moons?: MoonProps[];
-  terrainIntensity?: number;
-  isGasGiant?: boolean;
-  mass?: number;
-  temperature?: number;
-  discoveryYear?: number;
-  description?: string;
-  color?: string;
-  specularColor?: string;
-}
-
-interface MoonProps {
-  name: string;
-  size: number;
-  distance: number;
-  orbitalPeriod: number;
-  rotationSpeed: number;
-}
-
-interface SpacecraftProps {
-  position: [number, number, number];
-  targetPlanet?: string;
-  speed: number;
-  missionType: 'orbiter' | 'lander' | 'flyby';
-}
-
-interface CameraState {
-  mode: 'free' | 'planet_focus' | 'surface_view' | 'spacecraft_chase';
-  target: string | null;
-  position: THREE.Vector3;
-  lookAt: THREE.Vector3;
-}
-
-// ----------------------------------------------------
-// CONSTANTS AND CONFIGURATION
-// ----------------------------------------------------
-
-// Realistic planetary data with enhanced parameters and colors
-const PLANET_DATA: PlanetProps[] = [
-  {
-    name: 'Sun',
-    size: 6.96,
-    semiMajorAxis: 0,
-    eccentricity: 0,
-    orbitalPeriod: 0,
-    rotationSpeed: 0.002,
-    inclination: 0,
-    axialTilt: 0,
-    mass: 1.989e30,
-    temperature: 5778,
-    color: '#FFD700',
-    specularColor: '#FF4500',
-    description: 'The Sun is the star at the center of the Solar System. It is a nearly perfect sphere of hot plasma.'
-  },
-  {
-    name: 'Mercury',
-    size: 0.24,
-    semiMajorAxis: 5.79,
-    eccentricity: 0.206,
-    orbitalPeriod: 0.24,
-    rotationSpeed: 0.005,
-    inclination: 7.0,
-    axialTilt: 0.034,
-    terrainIntensity: 2.0,
-    mass: 3.301e23,
-    temperature: 440,
-    color: '#8C7853',
-    specularColor: '#A52A2A',
-    discoveryYear: -3000,
-    description: 'Mercury is the smallest and innermost planet in the Solar System.'
-  },
-  {
-    name: 'Venus',
-    size: 0.61,
-    semiMajorAxis: 10.82,
-    eccentricity: 0.007,
-    orbitalPeriod: 0.62,
-    rotationSpeed: -0.001,
-    inclination: 3.4,
-    axialTilt: 177.4,
-    atmosphereDensity: 0.9,
-    mass: 4.867e24,
-    temperature: 737,
-    color: '#FFC87C',
-    specularColor: '#FF6347',
-    discoveryYear: -3000,
-    description: 'Venus is the second planet from the Sun and is Earth\'s closest planetary neighbor.'
-  },
-  {
-    name: 'Earth',
-    size: 0.64,
-    semiMajorAxis: 15.0,
-    eccentricity: 0.017,
-    orbitalPeriod: 1.0,
-    rotationSpeed: 0.01,
-    inclination: 0.0,
-    axialTilt: 23.44,
-    atmosphereDensity: 0.7,
-    terrainIntensity: 1.5,
-    moons: [
-      {
-        name: 'Moon',
-        size: 0.17,
-        distance: 1.5,
-        orbitalPeriod: 0.074,
-        rotationSpeed: 0.004
-      }
-    ],
-    mass: 5.972e24,
-    temperature: 288,
-    color: '#6B93D6',
-    specularColor: '#228B22',
-    discoveryYear: -3000,
-    description: 'Earth is the third planet from the Sun and the only astronomical object known to harbor life.'
-  },
-  {
-    name: 'Mars',
-    size: 0.34,
-    semiMajorAxis: 22.79,
-    eccentricity: 0.093,
-    orbitalPeriod: 1.88,
-    rotationSpeed: 0.009,
-    inclination: 1.85,
-    axialTilt: 25.19,
-    terrainIntensity: 3.0,
-    atmosphereDensity: 0.1,
-    moons: [
-      {
-        name: 'Phobos',
-        size: 0.05,
-        distance: 0.7,
-        orbitalPeriod: 0.003,
-        rotationSpeed: 0.02
-      },
-      {
-        name: 'Deimos',
-        size: 0.03,
-        distance: 1.0,
-        orbitalPeriod: 0.008,
-        rotationSpeed: 0.015
-      }
-    ],
-    mass: 6.39e23,
-    temperature: 210,
-    color: '#CD5C5C',
-    specularColor: '#8B4513',
-    discoveryYear: -3000,
-    description: 'Mars is the fourth planet from the Sun and the second-smallest planet in the Solar System.'
-  },
-  {
-    name: 'Jupiter',
-    size: 7.0,
-    semiMajorAxis: 77.8,
-    eccentricity: 0.048,
-    orbitalPeriod: 11.86,
-    rotationSpeed: 0.02,
-    inclination: 1.31,
-    axialTilt: 3.13,
-    atmosphereDensity: 0.8,
-    isGasGiant: true,
-    mass: 1.898e27,
-    temperature: 165,
-    color: '#F0E68C',
-    specularColor: '#DAA520',
-    discoveryYear: -3000,
-    description: 'Jupiter is the fifth planet from the Sun and the largest in the Solar System.'
-  },
-  {
-    name: 'Saturn',
-    size: 5.8,
-    semiMajorAxis: 143.4,
-    eccentricity: 0.056,
-    orbitalPeriod: 29.46,
-    rotationSpeed: 0.018,
-    inclination: 2.49,
-    axialTilt: 26.73,
-    atmosphereDensity: 0.7,
-    hasRings: true,
-    isGasGiant: true,
-    mass: 5.683e26,
-    temperature: 134,
-    color: '#FFDEAD',
-    specularColor: '#B8860B',
-    discoveryYear: -3000,
-    description: 'Saturn is the sixth planet from the Sun and the second-largest in the Solar System.'
-  },
-  {
-    name: 'Uranus',
-    size: 2.5,
-    semiMajorAxis: 287.1,
-    eccentricity: 0.046,
-    orbitalPeriod: 84.01,
-    rotationSpeed: -0.012,
-    inclination: 0.77,
-    axialTilt: 97.77,
-    atmosphereDensity: 0.6,
-    isGasGiant: true,
-    mass: 8.681e25,
-    temperature: 76,
-    color: '#AFEEEE',
-    specularColor: '#48D1CC',
-    discoveryYear: 1781,
-    description: 'Uranus is the seventh planet from the Sun and has the third-largest planetary radius.'
-  },
-  {
-    name: 'Neptune',
-    size: 2.4,
-    semiMajorAxis: 449.5,
-    eccentricity: 0.010,
-    orbitalPeriod: 164.8,
-    rotationSpeed: 0.015,
-    inclination: 1.77,
-    axialTilt: 28.32,
-    atmosphereDensity: 0.7,
-    isGasGiant: true,
-    mass: 1.024e26,
-    temperature: 72,
-    color: '#1E90FF',
-    specularColor: '#0000CD',
-    discoveryYear: 1846,
-    description: 'Neptune is the eighth and farthest-known Solar planet from the Sun.'
-  }
+const dockApps = [
+  { id: "finder", name: "Finder", icon: "/icons/finder.svg" },
+  { id: "apps", name: "Apps", icon: "/icons/apps.svg" },
+  { id: "projects", name: "Projects", icon: "/icons/projects.svg" },
+  { id: "citytalk", name: "CityTalk", icon: "/icons/citytalk.svg" },
+  { id: "windows11", name: "Windows 11", icon: "/icons/windows11.svg" },
+  { id: "linux", name: "Linux", icon: "/icons/linux.svg" },
+  { id: "ubuntu", name: "Ubuntu", icon: "/icons/ubuntu.svg" },
+  { id: "kali", name: "Kali", icon: "/icons/kali.svg" },
+  { id: "studio", name: "Studio", icon: "/icons/studio.svg" },
+  { id: "terminal", name: "Terminal", icon: "/icons/terminal.svg" },
+  { id: "notes", name: "Notes", icon: "/icons/notes.svg" },
+  { id: "music", name: "Music", icon: "/icons/music.svg" },
+  { id: "settings", name: "Settings", icon: "/icons/settings.svg" },
+  { id: "safari", name: "Safari", icon: "/icons/safari.svg" },
+  { id: "vscode", name: "VS Code", icon: "/icons/vscode.svg" },
+  { id: "discord", name: "Discord", icon: "/icons/discord.svg" },
+  { id: "bin", name: "Bin", icon: "/icons/bin.svg" },
+  { id: "games", name: "Games", icon: "/icons/games.svg" },
 ];
 
-// ----------------------------------------------------
-// ADVANCED SHADERS AND MATERIALS
-// ----------------------------------------------------
+const desktopApps = [
+  { id: "whatsapp", name: "WhatsApp", icon: "/icons/whatsapp.svg" },
+  { id: "instagram", name: "Instagram", icon: "/icons/instagram.svg" },
+  { id: "discord", name: "Discord", icon: "/icons/discord.svg" },
+  { id: "camera", name: "Camera", icon: "/icons/camera.svg" },
+  { id: "calculator", name: "Calculator", icon: "/icons/calculator.svg" },
+  { id: "calendar", name: "Calendar", icon: "/icons/calendar.svg" },
+  { id: "amc", name: "AMC MEP 24x7", icon: "/icons/amc.svg" },
+  { id: "github", name: "GitHub Desktop", icon: "/icons/github.svg" },
+  { id: "safari", name: "Safari", icon: "/icons/safari.svg" },
+  { id: "vscode", name: "VS Code", icon: "/icons/vscode.svg" },
+];
 
-// Advanced noise functions for procedural generation
-const advancedNoiseFunctions = `
-  // Advanced 3D Noise Functions
-  vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-  vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-  vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
-  vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+const widgets = [
+  {
+    id: "weather",
+    title: "New Delhi",
+    body: "16°C · Partly Cloudy",
+    meta: ["9 PM 15°", "10 PM 14°", "11 PM 14°"],
+  },
+  {
+    id: "calendar",
+    title: "Calendar",
+    body: "Sun 8 Feb",
+    meta: ["CityTalk demo · Tue 11:00 AM"],
+  },
+  {
+    id: "reminders",
+    title: "Reminders",
+    body: "No reminders today.",
+    meta: ["0 due"],
+  },
+];
 
-  float snoise(vec3 v) {
-    const vec2 C = vec2(1.0/6.0, 1.0/3.0);
-    const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+const safariFavorites = [
+  {
+    name: "Arc Eleven Architect",
+    url: "arcelevenarchitect.com",
+    icon: "/icons/favorites/arc.svg",
+  },
+  { name: "Palanhar", url: "palanhar.com", icon: "/icons/favorites/palanhar.svg" },
+  { name: "SS Engineers", url: "ssengineers.in", icon: "/icons/favorites/ss.svg" },
+  { name: "SGE", url: "sge.org.in", icon: "/icons/favorites/sge.svg" },
+  { name: "AMC MEP", url: "amcmep.in", icon: "/icons/favorites/amc.svg" },
+  { name: "Facebook", url: "facebook.com", icon: "/icons/favorites/facebook.svg" },
+  { name: "Instagram", url: "instagram.com", icon: "/icons/favorites/instagram.svg" },
+  { name: "LinkedIn", url: "linkedin.com", icon: "/icons/favorites/linkedin.svg" },
+];
 
-    // First corner
-    vec3 i = floor(v + dot(v, C.yyy));
-    vec3 x0 = v - i + dot(i, C.xxx);
+const appContent: Record<string, { title: string; body: string; subtitle?: string }> = {
+  apps: {
+    title: "Apps",
+    subtitle: "Launchpad",
+    body: "Open any application from your desktop collection.",
+  },
+  finder: {
+    title: "Finder",
+    subtitle: "Notshubham · Desktop",
+    body: "Quick access to projects, apps, and live city spaces.",
+  },
+  projects: {
+    title: "Projects",
+    subtitle: "Launchpad",
+    body: "OS-inspired builds, realtime platforms, and immersive product labs.",
+  },
+  citytalk: {
+    title: "CityTalk Live",
+    subtitle: "Realtime City World",
+    body: "Neighborhoods, live events, and creator tools running 24/7.",
+  },
+  studio: {
+    title: "Studio",
+    subtitle: "Notshubham Studio",
+    body: "Design, engineering, and launch acceleration for product teams.",
+  },
+  windows11: {
+    title: "Windows 11",
+    subtitle: "OS Workspace",
+    body: "A sleek, productive environment with modern UI and snap layouts.",
+  },
+  linux: {
+    title: "Linux",
+    subtitle: "Open Source OS",
+    body: "Powerful, flexible, and built for developers and infrastructure.",
+  },
+  ubuntu: {
+    title: "Ubuntu",
+    subtitle: "Linux Distribution",
+    body: "A friendly desktop OS with a strong community and fast setup.",
+  },
+  kali: {
+    title: "Kali Linux",
+    subtitle: "Security Toolkit",
+    body: "Advanced security and penetration testing tools in one OS.",
+  },
+  terminal: {
+    title: "Terminal",
+    subtitle: "zsh · local",
+    body: "$ build --realtime --polished --delight\n$ ship",
+  },
+  notes: {
+    title: "Notes",
+    subtitle: "Ideas",
+    body: "Capture concepts, product sketches, and launch checklists.",
+  },
+  music: {
+    title: "Music",
+    subtitle: "Focus Playlist",
+    body: "Now playing: Ambient Cityscapes · 42 min left.",
+  },
+  settings: {
+    title: "Settings",
+    subtitle: "System",
+    body: "Personalize wallpaper, widgets, and dock behavior.",
+  },
+  safari: {
+    title: "Safari",
+    subtitle: "notshubham.dev",
+    body: "A fast, focused browser for exploring the city web.",
+  },
+  vscode: {
+    title: "VS Code",
+    subtitle: "Workspace",
+    body: "Shipping realtime features with clean, modern code.",
+  },
+  discord: {
+    title: "Discord",
+    subtitle: "Community",
+    body: "Live collabs, launch rooms, and community updates.",
+  },
+  bin: {
+    title: "Bin",
+    subtitle: "Trash",
+    body: "Nothing to delete right now.",
+  },
+  games: {
+    title: "Games",
+    subtitle: "Arcade",
+    body: "Play and prototype interactive experiences.",
+  },
+  whatsapp: {
+    title: "WhatsApp",
+    subtitle: "Chats",
+    body: "New message from CityTalk Team.",
+  },
+  instagram: {
+    title: "Instagram",
+    subtitle: "Studio Feed",
+    body: "Latest launch visuals and behind-the-scenes shots.",
+  },
+  camera: {
+    title: "Camera",
+    subtitle: "Studio",
+    body: "Capture a new shot for the next release.",
+  },
+  calculator: {
+    title: "Calculator",
+    subtitle: "Quick Math",
+    body: "Build cost estimates and sprint planning numbers.",
+  },
+  calendar: {
+    title: "Calendar",
+    subtitle: "Schedule",
+    body: "Upcoming: CityTalk demo · Tue · 11:00 AM.",
+  },
+  amc: {
+    title: "AMC MEP 24x7",
+    subtitle: "Operations",
+    body: "Monitoring energy, systems, and facility performance.",
+  },
+  github: {
+    title: "GitHub Desktop",
+    subtitle: "Repositories",
+    body: "Sync branches and ship releases with confidence.",
+  },
+};
 
-    // Other corners
-    vec3 g = step(x0.yzx, x0.xyz);
-    vec3 l = 1.0 - g;
-    vec3 i1 = min(g.xyz, l.zxy);
-    vec3 i2 = max(g.xyz, l.zxy);
+const defaultWindowPositions = [
+  { x: 120, y: 140 },
+  { x: 260, y: 180 },
+  { x: 360, y: 120 },
+  { x: 480, y: 220 },
+  { x: 200, y: 320 },
+];
 
-    vec3 x1 = x0 - i1 + C.xxx;
-    vec3 x2 = x0 - i2 + C.yyy;
-    vec3 x3 = x0 - D.yyy;
+const windowSizes: Record<string, { width: number; height: number }> = {
+  apps: { width: 860, height: 520 },
+  finder: { width: 520, height: 360 },
+  projects: { width: 520, height: 360 },
+  citytalk: { width: 520, height: 360 },
+  windows11: { width: 560, height: 360 },
+  linux: { width: 560, height: 360 },
+  ubuntu: { width: 560, height: 360 },
+  kali: { width: 560, height: 360 },
+  studio: { width: 520, height: 360 },
+  terminal: { width: 520, height: 320 },
+  notes: { width: 520, height: 320 },
+  music: { width: 520, height: 320 },
+  settings: { width: 520, height: 340 },
+  calendar: { width: 520, height: 360 },
+};
 
-    // Permutations
-    i = mod289(i);
-    vec4 p = permute(permute(permute(
-              i.z + vec4(0.0, i1.z, i2.z, 1.0))
-            + i.y + vec4(0.0, i1.y, i2.y, 1.0))
-            + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+export default function Home() {
+  const [openApps, setOpenApps] = useState<string[]>(["finder"]);
+  const [minimizedApps, setMinimizedApps] = useState<string[]>([]);
+  const [maximizedApps, setMaximizedApps] = useState<string[]>([]);
+  const [activeApp, setActiveApp] = useState<string>("finder");
+  const [menu, setMenu] = useState<{ x: number; y: number } | null>(null);
+  const [now, setNow] = useState<Date>(new Date());
+  const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>(
+    () => ({
+      finder: { x: 120, y: 140 },
+    })
+  );
+  const [openingId, setOpeningId] = useState<string>("finder");
+  const [minimizingId, setMinimizingId] = useState<string>("");
+  const [dragging, setDragging] = useState<{
+    id: string;
+    offsetX: number;
+    offsetY: number;
+  } | null>(null);
+  const [safariQuery, setSafariQuery] = useState<string>("");
+  const [spotlightOpen, setSpotlightOpen] = useState<boolean>(false);
+  const [controlCenterOpen, setControlCenterOpen] = useState<boolean>(false);
+  const [notificationOpen, setNotificationOpen] = useState<boolean>(false);
+  const [widgetEditOpen, setWidgetEditOpen] = useState<boolean>(false);
+  const [widgetVisibility, setWidgetVisibility] = useState<Record<string, boolean>>(
+    () =>
+      widgets.reduce((acc, widget) => {
+        acc[widget.id] = true;
+        return acc;
+      }, {} as Record<string, boolean>)
+  );
+  const [windowSizeState, setWindowSizeState] = useState<
+    Record<string, { width: number; height: number }>
+  >(() => ({ ...windowSizes }));
+  const desktopRef = useRef<HTMLDivElement | null>(null);
+  const [desktopSize, setDesktopSize] = useState<{ width: number; height: number }>(
+    () => ({ width: 0, height: 0 })
+  );
 
-    // Gradients
-    float n_ = 0.142857142857;
-    vec3 ns = n_ * D.wyz - D.xzx;
-
-    vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
-
-    vec4 x_ = floor(j * ns.z);
-    vec4 y_ = floor(j - 7.0 * x_);
-
-    vec4 x = x_ * ns.x + ns.yyyy;
-    vec4 y = y_ * ns.x + ns.yyyy;
-    vec4 h = 1.0 - abs(x) - abs(y);
-
-    vec4 b0 = vec4(x.xy, y.xy);
-    vec4 b1 = vec4(x.zw, y.zw);
-
-    vec4 s0 = floor(b0)*2.0 + 1.0;
-    vec4 s1 = floor(b1)*2.0 + 1.0;
-    vec4 sh = -step(h, vec4(0.0));
-
-    vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
-    vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
-
-    vec3 p0 = vec3(a0.xy,h.x);
-    vec3 p1 = vec3(a0.zw,h.y);
-    vec3 p2 = vec3(a1.xy,h.z);
-    vec3 p3 = vec3(a1.zw,h.w);
-
-    // Normalise gradients
-    vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
-    p0 *= norm.x;
-    p1 *= norm.y;
-    p2 *= norm.z;
-    p3 *= norm.w;
-
-    // Mix final noise value
-    vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
-    m = m * m;
-    return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
-  }
-
-  // Fractional Brownian Motion
-  float fbm(vec3 p, int octaves, float lacunarity, float gain) {
-    float value = 0.0;
-    float amplitude = 0.5;
-    float frequency = 1.0;
-    for (int i = 0; i < octaves; i++) {
-      value += amplitude * snoise(p * frequency);
-      frequency *= lacunarity;
-      amplitude *= gain;
-    }
-    return value;
-  }
-
-  // Ridged multi-fractal noise
-  float ridgedMF(vec3 p, int octaves, float lacunarity, float gain, float offset) {
-    float value = 0.0;
-    float amplitude = 0.5;
-    float frequency = 1.0;
-    float prev = 1.0;
-    
-    for (int i = 0; i < octaves; i++) {
-      float n = abs(snoise(p * frequency));
-      n = offset - n;
-      n *= n;
-      n *= prev;
-      value += n * amplitude;
-      prev = n;
-      frequency *= lacunarity;
-      amplitude *= gain;
-    }
-    return value;
-  }
-
-  // Cellular noise for gas giant patterns
-  float cellular(vec3 p) {
-    vec3 ip = floor(p);
-    vec3 fp = fract(p);
-    float minDist = 1.0;
-    
-    for (int z = -1; z <= 1; z++) {
-      for (int y = -1; y <= 1; y++) {
-        for (int x = -1; x <= 1; x++) {
-          vec3 neighbor = vec3(float(x), float(y), float(z));
-          vec3 point = snoise(ip + neighbor) * 0.5 + 0.5;
-          vec3 diff = neighbor + point - fp;
-          float dist = length(diff);
-          minDist = min(minDist, dist);
-        }
-      }
-    }
-    return minDist;
-  }
-`;
-
-// Advanced terrain shader with procedural textures
-const advancedTerrainVertexShader = `
-  uniform float time;
-  uniform float terrainIntensity;
-  uniform float planetRadius;
-  uniform vec3 baseColor;
-  uniform vec3 specularColor;
-  uniform bool isGasGiant;
-  
-  varying vec3 vNormal;
-  varying vec3 vWorldPosition;
-  varying vec2 vUv;
-  varying float vElevation;
-  varying vec3 vColor;
-
-  ${advancedNoiseFunctions}
-
-  void main() {
-    vNormal = normalize(normalMatrix * normal);
-    vUv = uv;
-    
-    // Calculate world position for spherical coordinates
-    vec4 worldPosition = modelMatrix * vec4(position, 1.0);
-    vWorldPosition = worldPosition.xyz;
-    
-    // Convert to spherical coordinates for terrain generation
-    float latitude = asin(position.y / planetRadius);
-    float longitude = atan(position.z, position.x);
-    
-    if (isGasGiant) {
-      // Gas giant patterns
-      vec3 gasPos = position * 2.0;
-      float bands = sin(longitude * 8.0 + time * 0.1) * 0.5 + 0.5;
-      float cells = cellular(gasPos * 3.0);
-      float turbulence = fbm(gasPos * 4.0 + time * 0.05, 3, 2.0, 0.5);
-      
-      vElevation = bands * 0.3 + cells * 0.2 + turbulence * 0.1;
-      vColor = baseColor * (0.7 + bands * 0.3) + specularColor * cells;
-    } else {
-      // Rocky planet terrain
-      vec3 terrainPos = position * 2.0;
-      
-      // Base continent shape
-      float continent = fbm(terrainPos, 4, 2.0, 0.5);
-      continent = smoothstep(0.2, 0.8, continent);
-      
-      // Mountain ranges
-      float mountains = ridgedMF(terrainPos * 4.0 + time * 0.01, 6, 2.0, 0.5, 1.0);
-      
-      // Fine detail
-      float detail = snoise(terrainPos * 16.0) * 0.1;
-      
-      // Craters for some planets
-      float craters = 1.0 - cellular(terrainPos * 8.0) * 0.3;
-      
-      // Combine terrain layers
-      vElevation = (continent * 0.3 + mountains * 0.15 + detail * 0.05) * craters;
-      vElevation *= terrainIntensity;
-      
-      // Color based on elevation and features
-      float colorVariation = snoise(terrainPos * 8.0) * 0.3 + 0.7;
-      vColor = baseColor * colorVariation + specularColor * mountains * 0.2;
-    }
-    
-    // Displace vertex along normal
-    vec3 displacedPosition = position + normal * vElevation;
-    
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(displacedPosition, 1.0);
-  }
-`;
-
-const advancedTerrainFragmentShader = `
-  uniform vec3 lightDirection;
-  uniform float time;
-  uniform vec3 atmosphereColor;
-  uniform float atmosphereDensity;
-  uniform bool isGasGiant;
-  
-  varying vec3 vNormal;
-  varying vec3 vWorldPosition;
-  varying vec2 vUv;
-  varying float vElevation;
-  varying vec3 vColor;
-
-  ${advancedNoiseFunctions}
-
-  void main() {
-    // Enhanced normal calculation
-    vec3 normal = normalize(vNormal);
-    
-    // Dynamic lighting
-    float NdotL = max(dot(normal, normalize(lightDirection)), 0.0);
-    
-    vec3 finalColor = vColor;
-    
-    if (!isGasGiant) {
-      // Rocky planet features
-      
-      // Snow caps on high elevations
-      if (vElevation > 0.25) {
-        float snow = smoothstep(0.25, 0.3, vElevation);
-        finalColor = mix(finalColor, vec3(1.0), snow);
-      }
-      
-      // Water in low elevations (for Earth-like planets)
-      if (vElevation < 0.05 && atmosphereDensity > 0.5) {
-        float water = smoothstep(0.05, 0.02, vElevation);
-        finalColor = mix(finalColor, vec3(0.1, 0.2, 0.8), water);
-      }
-      
-      // Volcanic regions (for high temperature planets)
-      if (vElevation > 0.2 && atmosphereDensity < 0.3) {
-        float volcanic = ridgedMF(vWorldPosition * 10.0, 3, 2.0, 0.5, 1.0);
-        finalColor = mix(finalColor, vec3(0.8, 0.2, 0.1), volcanic * 0.3);
-      }
-    } else {
-      // Gas giant animations
-      float dynamicPattern = sin(vUv.x * 20.0 + time * 0.2) * 0.1;
-      finalColor += dynamicPattern;
-    }
-    
-    // Advanced lighting model
-    vec3 ambient = finalColor * 0.1;
-    vec3 diffuse = finalColor * NdotL;
-    
-    // Specular highlights
-    vec3 viewDir = normalize(-vWorldPosition);
-    vec3 reflectDir = reflect(-normalize(lightDirection), normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
-    vec3 specular = vec3(0.3) * spec;
-    
-    // Atmospheric scattering
-    float fresnel = 1.0 - max(dot(viewDir, normal), 0.0);
-    vec3 atmosphere = atmosphereColor * fresnel * atmosphereDensity;
-    
-    // Final color composition
-    vec3 final = ambient + diffuse + specular + atmosphere;
-    
-    gl_FragColor = vec4(final, 1.0);
-  }
-`;
-
-// Advanced atmosphere shader
-const advancedAtmosphereVertexShader = `
-  varying vec3 vNormal;
-  varying vec3 vViewDirection;
-  
-  void main() {
-    vNormal = normalize(normalMatrix * normal);
-    vec4 viewPosition = modelViewMatrix * vec4(position, 1.0);
-    vViewDirection = normalize(-viewPosition.xyz);
-    gl_Position = projectionMatrix * viewPosition;
-  }
-`;
-
-const advancedAtmosphereFragmentShader = `
-  uniform vec3 atmosphereColor;
-  uniform float atmosphereIntensity;
-  uniform vec3 lightDirection;
-  uniform float time;
-  
-  varying vec3 vNormal;
-  varying vec3 vViewDirection;
-  
-  ${advancedNoiseFunctions}
-
-  void main() {
-    // Enhanced atmospheric scattering
-    float fresnel = pow(1.0 - max(dot(vViewDirection, vNormal), 0.0), 2.0);
-    
-    // Light scattering effect
-    float scatter = max(dot(vNormal, normalize(lightDirection)), 0.0);
-    scatter = pow(scatter, 0.8);
-    
-    // Animated atmospheric glow
-    float pulse = sin(time * 0.5) * 0.1 + 0.9;
-    
-    // Cloud-like noise in atmosphere
-    vec3 noisePos = vNormal * 5.0 + time * 0.01;
-    float cloudNoise = snoise(noisePos) * 0.3 + 0.7;
-    
-    // Aurora effect for planets with magnetic fields
-    float aurora = sin(vNormal.y * 10.0 + time * 0.3) * 0.2 + 0.8;
-    
-    // Final atmosphere calculation
-    float atmosphere = fresnel * scatter * pulse * cloudNoise * aurora * atmosphereIntensity;
-    
-    // Color with depth variation
-    vec3 color = atmosphereColor * atmosphere;
-    
-    gl_FragColor = vec4(color, atmosphere * 0.8);
-  }
-`;
-
-// Ring system shader
-const ringFragmentShader = `
-  uniform float time;
-  uniform vec3 ringColor;
-  varying vec2 vUv;
-
-  ${advancedNoiseFunctions}
-
-  void main() {
-    float distanceFromCenter = length(vUv - 0.5) * 2.0;
-    
-    // Create ring patterns
-    float rings = sin(distanceFromCenter * 50.0 + time * 0.1) * 0.3 + 0.7;
-    float gaps = step(0.3, fract(distanceFromCenter * 20.0));
-    
-    // Add some noise for realism
-    float noise = snoise(vec3(vUv * 10.0, time * 0.05)) * 0.2 + 0.8;
-    
-    float alpha = rings * gaps * noise;
-    alpha *= 1.0 - smoothstep(0.8, 1.0, distanceFromCenter);
-    
-    vec3 color = ringColor * alpha;
-    
-    gl_FragColor = vec4(color, alpha * 0.8);
-  }
-`;
-
-// ----------------------------------------------------
-// CAMERA CONTEXT AND CONTROLLER (INSIDE CANVAS)
-// ----------------------------------------------------
-
-interface CameraContextType {
-  focusOnPlanet: (planetName: string, planetPosition: THREE.Vector3, planetSize: number) => void;
-  enterSurfaceView: (planetName: string, planetPosition: THREE.Vector3, planetSize: number) => void;
-  resetCamera: () => void;
-}
-
-const CameraContext = createContext<CameraContextType | null>(null);
-
-const CameraController: FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { camera } = useThree();
-  const [cameraState, setCameraState] = useState<CameraState>({
-    mode: 'free',
-    target: null,
-    position: new THREE.Vector3(0, 50, 80),
-    lookAt: new THREE.Vector3(0, 0, 0)
-  });
-
-  const focusOnPlanet = useCallback((planetName: string, planetPosition: THREE.Vector3, planetSize: number) => {
-    const offset = new THREE.Vector3(planetSize * 3, planetSize * 1.5, planetSize * 3);
-    const targetPosition = planetPosition.clone().add(offset);
-    
-    setCameraState({
-      mode: 'planet_focus',
-      target: planetName,
-      position: targetPosition,
-      lookAt: planetPosition
+  const launchpadApps = useMemo(() => {
+    const seen = new Set<string>();
+    return [...dockApps, ...desktopApps].filter((app) => {
+      if (seen.has(app.id)) return false;
+      seen.add(app.id);
+      return true;
     });
   }, []);
-
-  const enterSurfaceView = useCallback((planetName: string, planetPosition: THREE.Vector3, planetSize: number) => {
-    const surfacePosition = planetPosition.clone().add(new THREE.Vector3(0, planetSize * 1.1, 0));
-    
-    setCameraState({
-      mode: 'surface_view',
-      target: planetName,
-      position: surfacePosition,
-      lookAt: planetPosition.clone().add(new THREE.Vector3(planetSize * 2, 0, 0))
-    });
-  }, []);
-
-  const resetCamera = useCallback(() => {
-    setCameraState({
-      mode: 'free',
-      target: null,
-      position: new THREE.Vector3(0, 50, 80),
-      lookAt: new THREE.Vector3(0, 0, 0)
-    });
-  }, []);
-
-  // Smooth camera transitions
-  useFrame(() => {
-    const transitionSpeed = 0.05;
-    camera.position.lerp(cameraState.position, transitionSpeed);
-    
-    const currentLookAt = new THREE.Vector3();
-    camera.getWorldDirection(currentLookAt);
-    const targetLookAt = cameraState.lookAt.clone().sub(camera.position).normalize();
-    
-    const newLookAt = currentLookAt.lerp(targetLookAt, transitionSpeed);
-    camera.lookAt(camera.position.clone().add(newLookAt));
-  });
-
-  const contextValue = useMemo(() => ({
-    focusOnPlanet,
-    enterSurfaceView,
-    resetCamera
-  }), [focusOnPlanet, enterSurfaceView, resetCamera]);
-
-  return (
-    <CameraContext.Provider value={contextValue}>
-      {children}
-    </CameraContext.Provider>
-  );
-};
-
-// Hook to use camera controls within Canvas
-const useCamera = () => {
-  const context = useContext(CameraContext);
-  if (!context) {
-    throw new Error('useCamera must be used within a CameraController');
-  }
-  return context;
-};
-
-// ----------------------------------------------------
-// CUSTOM HOOKS
-// ----------------------------------------------------
-
-const usePlanetaryPhysics = (semiMajorAxis: number, eccentricity: number, orbitalPeriod: number, inclination: number) => {
-  const orbitRef = useRef<THREE.Group>(null!);
-  const TIME_SCALE = 0.00001;
-
-  const meanMotion = useMemo(() => (2 * Math.PI) / orbitalPeriod, [orbitalPeriod]);
-
-  useFrame(({ clock }) => {
-    if (!orbitRef.current) return;
-
-    const time = clock.getElapsedTime() * TIME_SCALE;
-    const M = meanMotion * time;
-
-    // Solve Kepler's Equation for Eccentric Anomaly
-    let E = M;
-    for (let i = 0; i < 10; i++) {
-      E = M + eccentricity * Math.sin(E);
-    }
-
-    // Calculate True Anomaly and distance
-    const r = semiMajorAxis * (1 - eccentricity * Math.cos(E));
-    const v = 2 * Math.atan2(
-      Math.sqrt(1 + eccentricity) * Math.sin(E / 2),
-      Math.sqrt(1 - eccentricity) * Math.cos(E / 2)
-    );
-
-    // Convert to Cartesian coordinates with inclination
-    const x = r * Math.cos(v);
-    const z = r * Math.sin(v);
-    const y = Math.sin(inclination * Math.PI / 180) * z;
-
-    orbitRef.current.position.set(x, y, z);
-  });
-
-  return orbitRef;
-};
-
-// ----------------------------------------------------
-// ADVANCED COMPONENTS
-// ----------------------------------------------------
-
-// Enhanced Planet Material with procedural generation
-const AdvancedPlanetMaterial: FC<{ planetData: PlanetProps }> = ({ planetData }) => {
-  const shaderRef = useRef<THREE.ShaderMaterial>(null!);
-  const lightDirection = useMemo(() => new THREE.Vector3(1, 1, 1).normalize(), []);
-  const baseColor = useMemo(() => new THREE.Color(planetData.color || '#808080'), [planetData.color]);
-  const specularColor = useMemo(() => new THREE.Color(planetData.specularColor || '#FFFFFF'), [planetData.specularColor]);
-
-  useFrame(({ clock }) => {
-    if (shaderRef.current) {
-      shaderRef.current.uniforms.time.value = clock.getElapsedTime();
-    }
-  });
-
-  return (
-    <shaderMaterial
-      ref={shaderRef}
-      vertexShader={advancedTerrainVertexShader}
-      fragmentShader={advancedTerrainFragmentShader}
-      uniforms={{
-        time: { value: 0 },
-        terrainIntensity: { value: planetData.terrainIntensity || 1.0 },
-        planetRadius: { value: planetData.size },
-        lightDirection: { value: lightDirection },
-        atmosphereColor: { value: new THREE.Color(0.4, 0.6, 1.0) },
-        atmosphereDensity: { value: planetData.atmosphereDensity || 0.0 },
-        baseColor: { value: baseColor },
-        specularColor: { value: specularColor },
-        isGasGiant: { value: planetData.isGasGiant || false }
-      }}
-    />
-  );
-};
-
-// Advanced Atmosphere Component
-const AdvancedAtmosphere: FC<{ planetData: PlanetProps }> = ({ planetData }) => {
-  const shaderRef = useRef<THREE.ShaderMaterial>(null!);
-  
-  const atmosphereColor = useMemo(() => {
-    switch (planetData.name) {
-      case 'Earth': return new THREE.Color(0.2, 0.4, 1.0);
-      case 'Venus': return new THREE.Color(1.0, 0.8, 0.6);
-      case 'Mars': return new THREE.Color(1.0, 0.4, 0.2);
-      case 'Jupiter': return new THREE.Color(0.9, 0.7, 0.5);
-      case 'Saturn': return new THREE.Color(0.95, 0.85, 0.7);
-      case 'Uranus': return new THREE.Color(0.6, 0.8, 0.9);
-      case 'Neptune': return new THREE.Color(0.2, 0.3, 0.8);
-      default: return new THREE.Color(0.4, 0.6, 1.0);
-    }
-  }, [planetData.name]);
-
-  useFrame(({ clock }) => {
-    if (shaderRef.current) {
-      shaderRef.current.uniforms.time.value = clock.getElapsedTime();
-    }
-  });
-
-  return (
-    <mesh scale={1.1}>
-      <sphereGeometry args={[1, 64, 64]} />
-      <shaderMaterial
-        ref={shaderRef}
-        vertexShader={advancedAtmosphereVertexShader}
-        fragmentShader={advancedAtmosphereFragmentShader}
-        uniforms={{
-          atmosphereColor: { value: atmosphereColor },
-          atmosphereIntensity: { value: planetData.atmosphereDensity || 0.5 },
-          lightDirection: { value: new THREE.Vector3(1, 1, 1).normalize() },
-          time: { value: 0 }
-        }}
-        blending={THREE.AdditiveBlending}
-        side={THREE.BackSide}
-        transparent={true}
-      />
-    </mesh>
-  );
-};
-
-// Procedural Cloud Layer
-const CloudLayer: FC<{ planetData: PlanetProps }> = ({ planetData }) => {
-  const shaderRef = useRef<THREE.ShaderMaterial>(null!);
-  
-  useFrame(({ clock }) => {
-    if (shaderRef.current) {
-      shaderRef.current.uniforms.time.value = clock.getElapsedTime();
-    }
-  });
-
-  return (
-    <mesh scale={1.05}>
-      <sphereGeometry args={[1, 64, 64]} />
-      <shaderMaterial
-        ref={shaderRef}
-        vertexShader={`
-          uniform float time;
-          varying vec2 vUv;
-          varying vec3 vNormal;
-          ${advancedNoiseFunctions}
-          
-          void main() {
-            vUv = uv;
-            vNormal = normal;
-            
-            // Animate cloud movement
-            vec3 displaced = position + normal * snoise(position * 2.0 + time * 0.1) * 0.02;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(displaced, 1.0);
-          }
-        `}
-        fragmentShader={`
-          uniform float time;
-          varying vec2 vUv;
-          varying vec3 vNormal;
-          ${advancedNoiseFunctions}
-          
-          void main() {
-            // Cloud patterns using multiple noise layers
-            vec3 cloudPos = vec3(vUv * 5.0, time * 0.05);
-            float clouds = fbm(cloudPos, 4, 2.0, 0.5);
-            clouds = smoothstep(0.3, 0.7, clouds);
-            
-            // Add some detail
-            float detail = snoise(cloudPos * 10.0) * 0.3 + 0.7;
-            clouds *= detail;
-            
-            gl_FragColor = vec4(1.0, 1.0, 1.0, clouds * 0.6);
-          }
-        `}
-        transparent={true}
-        uniforms={{ time: { value: 0 } }}
-      />
-    </mesh>
-  );
-};
-
-// Enhanced Ring System with procedural generation
-const AdvancedRingSystem: FC<{ planetData: PlanetProps }> = ({ planetData }) => {
-  const shaderRef = useRef<THREE.ShaderMaterial>(null!);
-  const ringColor = useMemo(() => new THREE.Color(planetData.specularColor || '#DAA520'), [planetData.specularColor]);
-
-  useFrame(({ clock }) => {
-    if (shaderRef.current) {
-      shaderRef.current.uniforms.time.value = clock.getElapsedTime();
-    }
-  });
-
-  return (
-    <group rotation={[Math.PI / 2, 0, 0]}>
-      <mesh rotation={[0, 0, 0]}>
-        <ringGeometry args={[1.2, 3.5, 128]} />
-        <shaderMaterial
-          ref={shaderRef}
-          vertexShader={`
-            varying vec2 vUv;
-            void main() {
-              vUv = uv;
-              gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-            }
-          `}
-          fragmentShader={ringFragmentShader}
-          transparent={true}
-          side={THREE.DoubleSide}
-          uniforms={{
-            time: { value: 0 },
-            ringColor: { value: ringColor }
-          }}
-        />
-      </mesh>
-    </group>
-  );
-};
-
-// Moon System Component
-const MoonSystem: FC<{ moons: MoonProps[], planetSize: number }> = ({ moons, planetSize }) => {
-  return (
-    <group>
-      {moons.map((moon, index) => (
-        <MoonComponent key={moon.name} moon={moon} planetSize={planetSize} index={index} />
-      ))}
-    </group>
-  );
-};
-
-const MoonComponent: FC<{ moon: MoonProps, planetSize: number, index: number }> = ({ moon, planetSize, index }) => {
-  const orbitRef = useRef<THREE.Group>(null!);
-  
-  useFrame(({ clock }) => {
-    if (orbitRef.current) {
-      const time = clock.getElapsedTime() * 0.1;
-      const angle = (time / moon.orbitalPeriod) * Math.PI * 2;
-      const distance = planetSize + moon.distance;
-      
-      orbitRef.current.position.x = Math.cos(angle) * distance;
-      orbitRef.current.position.z = Math.sin(angle) * distance;
-      orbitRef.current.rotation.y += moon.rotationSpeed;
-    }
-  });
-
-  return (
-    <group ref={orbitRef}>
-      <Sphere args={[moon.size, 32, 32]}>
-        <meshStandardMaterial 
-          color="#888888" 
-          roughness={0.8}
-          metalness={0.1}
-        />
-      </Sphere>
-      {/* Moon orbit line */}
-      <Line
-        points={Array.from({ length: 64 }, (_, i) => {
-          const angle = (i / 64) * Math.PI * 2;
-          const x = Math.cos(angle) * (planetSize + moon.distance);
-          const z = Math.sin(angle) * (planetSize + moon.distance);
-          return new THREE.Vector3(x, 0, z);
-        })}
-        color="gray"
-        transparent
-        opacity={0.2}
-        lineWidth={1}
-      />
-    </group>
-  );
-};
-
-// Spacecraft Component
-const Spacecraft: FC<SpacecraftProps> = ({ position, targetPlanet, speed, missionType }) => {
-  const meshRef = useRef<THREE.Mesh>(null!);
-  const trailRef = useRef<THREE.Group>(null!);
-  
-  useFrame(({ clock }) => {
-    if (meshRef.current) {
-      // Animate spacecraft movement
-      const time = clock.getElapsedTime();
-      meshRef.current.position.x = position[0] + Math.sin(time * speed) * 10;
-      meshRef.current.position.y = position[1] + Math.cos(time * speed) * 5;
-      meshRef.current.position.z = position[2] + Math.sin(time * speed * 0.5) * 8;
-      
-      // Rotate towards movement direction
-      meshRef.current.rotation.x = Math.sin(time) * 0.1;
-      meshRef.current.rotation.y = time * 0.5;
-    }
-  });
-
-  return (
-    <group ref={trailRef}>
-      <Trail
-        width={2}
-        length={10}
-        color={new THREE.Color(0.2, 0.8, 1.0)}
-        attenuation={(t) => t * t}
-      >
-        <mesh ref={meshRef} position={position}>
-          <coneGeometry args={[0.5, 2, 8]} />
-          <meshStandardMaterial color="#4FC3F7" emissive="#0066CC" emissiveIntensity={0.5} />
-        </mesh>
-      </Trail>
-      
-      {/* Engine glow */}
-      <pointLight
-        position={[position[0], position[1] - 1, position[2]]}
-        color="#0066FF"
-        intensity={2}
-        distance={5}
-      />
-    </group>
-  );
-};
-
-// Enhanced Planet Component
-const EnhancedPlanet: FC<{ planetData: PlanetProps }> = ({ planetData }) => {
-  const meshRef = useRef<THREE.Mesh>(null!);
-  const groupRef = useRef<THREE.Group>(null!);
-  const orbitRef = usePlanetaryPhysics(
-    planetData.semiMajorAxis,
-    planetData.eccentricity,
-    planetData.orbitalPeriod,
-    planetData.inclination
-  );
-
-  const { focusOnPlanet, enterSurfaceView } = useCamera();
-
-  useFrame(() => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y += planetData.rotationSpeed;
-      // Apply axial tilt
-      meshRef.current.rotation.x = planetData.axialTilt * (Math.PI / 180);
-    }
-  });
-
-  const handlePlanetClick = useCallback(() => {
-    if (orbitRef.current) {
-      focusOnPlanet(planetData.name, orbitRef.current.position, planetData.size);
-    }
-  }, [planetData.name, planetData.size, focusOnPlanet]);
-
-  const handleSurfaceView = useCallback(() => {
-    if (orbitRef.current) {
-      enterSurfaceView(planetData.name, orbitRef.current.position, planetData.size);
-    }
-  }, [planetData.name, planetData.size, enterSurfaceView]);
-
-  // Generate orbital path
-  const orbitPoints = useMemo(() => {
-    const points = [];
-    for (let i = 0; i <= 360; i++) {
-      const angle = i * (Math.PI / 180);
-      const r = planetData.semiMajorAxis * (1 - planetData.eccentricity * planetData.eccentricity) / 
-                (1 + planetData.eccentricity * Math.cos(angle));
-      const x = r * Math.cos(angle);
-      const z = r * Math.sin(angle);
-      const y = Math.sin(planetData.inclination * Math.PI / 180) * z;
-      points.push(new THREE.Vector3(x, y, z));
-    }
-    return points;
-  }, [planetData.semiMajorAxis, planetData.eccentricity, planetData.inclination]);
-
-  return (
-    <group ref={orbitRef}>
-      {/* Orbital path */}
-      {planetData.name !== 'Sun' && (
-        <Line
-          points={orbitPoints}
-          color="gray"
-          transparent
-          opacity={0.1}
-          lineWidth={1}
-        />
-      )}
-      
-      <group ref={groupRef}>
-        {/* Planet sphere */}
-        <mesh 
-          ref={meshRef} 
-          onClick={handlePlanetClick}
-          onDoubleClick={handleSurfaceView}
-        >
-          <sphereGeometry args={[planetData.size, 128, 128]} />
-          <AdvancedPlanetMaterial planetData={planetData} />
-        </mesh>
-
-        {/* Atmosphere */}
-        {planetData.atmosphereDensity && planetData.atmosphereDensity > 0 && (
-          <AdvancedAtmosphere planetData={planetData} />
-        )}
-
-        {/* Cloud layer for planets with thick atmosphere */}
-        {planetData.atmosphereDensity && planetData.atmosphereDensity > 0.5 && planetData.name !== 'Sun' && (
-          <CloudLayer planetData={planetData} />
-        )}
-
-        {/* Ring system */}
-        {planetData.hasRings && (
-          <AdvancedRingSystem planetData={planetData} />
-        )}
-
-        {/* Moons */}
-        {planetData.moons && planetData.moons.length > 0 && (
-          <MoonSystem moons={planetData.moons} planetSize={planetData.size} />
-        )}
-
-        {/* Planet label */}
-        <Text
-          position={[0, planetData.size + 1, 0]}
-          fontSize={0.8}
-          color="white"
-          anchorX="center"
-          anchorY="middle"
-        >
-          {planetData.name}
-        </Text>
-      </group>
-    </group>
-  );
-};
-
-// Enhanced Sun Component with procedural solar features
-const EnhancedSun: FC = () => {
-  const sunData = PLANET_DATA.find(p => p.name === 'Sun')!;
-  const meshRef = useRef<THREE.Mesh>(null!);
-  const shaderRef = useRef<THREE.ShaderMaterial>(null!);
-  
-  useFrame(({ clock }) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y += sunData.rotationSpeed;
-    }
-    if (shaderRef.current) {
-      shaderRef.current.uniforms.time.value = clock.getElapsedTime();
-    }
-  });
-
-  return (
-    <mesh ref={meshRef}>
-      <sphereGeometry args={[sunData.size, 128, 128]} />
-      <shaderMaterial
-        ref={shaderRef}
-        vertexShader={`
-          uniform float time;
-          varying vec3 vNormal;
-          varying vec2 vUv;
-          ${advancedNoiseFunctions}
-          
-          void main() {
-            vNormal = normal;
-            vUv = uv;
-            
-            // Solar surface turbulence
-            vec3 displaced = position + normal * snoise(position * 3.0 + time * 0.5) * 0.1;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(displaced, 1.0);
-          }
-        `}
-        fragmentShader={`
-          uniform float time;
-          varying vec3 vNormal;
-          varying vec2 vUv;
-          ${advancedNoiseFunctions}
-          
-          void main() {
-            // Solar surface patterns
-            float turbulence = fbm(vNormal * 5.0 + time * 0.2, 3, 2.0, 0.5);
-            float granules = cellular(vNormal * 8.0 + time * 0.1);
-            
-            // Core and corona colors
-            vec3 coreColor = vec3(1.0, 0.8, 0.2);
-            vec3 coronaColor = vec3(1.0, 0.4, 0.1);
-            
-            // Mix colors based on patterns
-            vec3 finalColor = mix(coreColor, coronaColor, turbulence * granules);
-            
-            // Add some brightness variation
-            float brightness = 0.8 + turbulence * 0.4;
-            
-            gl_FragColor = vec4(finalColor * brightness, 1.0);
-          }
-        `}
-        uniforms={{ time: { value: 0 } }}
-      />
-      
-      {/* Solar corona */}
-      <mesh scale={1.2}>
-        <sphereGeometry args={[1, 64, 64]} />
-        <shaderMaterial
-          vertexShader={`
-            varying vec3 vNormal;
-            void main() {
-              vNormal = normalize(normalMatrix * normal);
-              gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-            }
-          `}
-          fragmentShader={`
-            varying vec3 vNormal;
-            uniform float time;
-            void main() {
-              float intensity = pow(0.7 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.0);
-              vec3 coronaColor = vec3(1.0, 0.6, 0.2) * intensity;
-              gl_FragColor = vec4(coronaColor, intensity * 0.5);
-            }
-          `}
-          blending={THREE.AdditiveBlending}
-          transparent={true}
-          uniforms={{ time: { value: 0 } }}
-        />
-      </mesh>
-    </mesh>
-  );
-};
-
-// Solar Flare Component
-const SolarFlares: FC = () => {
-  const flareRef = useRef<THREE.Group>(null!);
-  
-  useFrame(({ clock }) => {
-    if (flareRef.current) {
-      flareRef.current.rotation.y = clock.getElapsedTime() * 0.1;
-    }
-  });
-
-  return (
-    <group ref={flareRef}>
-      {Array.from({ length: 8 }, (_, i) => (
-        <mesh key={i} rotation={[0, (i / 8) * Math.PI * 2, 0]}>
-          <coneGeometry args={[0.5, 15, 8]} />
-          <meshBasicMaterial
-            color={new THREE.Color(1, 0.3, 0.1)}
-            transparent
-            opacity={0.3}
-            blending={THREE.AdditiveBlending}
-          />
-        </mesh>
-      ))}
-    </group>
-  );
-};
-
-// Background Galaxy Component
-const Galaxy: FC = () => {
-  const galaxyRef = useRef<THREE.Points>(null!);
-  
-  const galaxyGeometry = useMemo(() => {
-    const geometry = new THREE.BufferGeometry();
-    const positions = new Float32Array(10000 * 3);
-    const colors = new Float32Array(10000 * 3);
-    const sizes = new Float32Array(10000);
-
-    for (let i = 0; i < 10000; i++) {
-      // Spiral galaxy distribution
-      const radius = Math.random() * 200 + 50;
-      const angle = Math.random() * Math.PI * 2;
-      const spiral = Math.sin(angle * 5) * 20;
-      
-      positions[i * 3] = Math.cos(angle) * (radius + spiral);
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 10;
-      positions[i * 3 + 2] = Math.sin(angle) * (radius + spiral);
-      
-      // Color variation
-      colors[i * 3] = 0.5 + Math.random() * 0.5; // R
-      colors[i * 3 + 1] = 0.3 + Math.random() * 0.3; // G
-      colors[i * 3 + 2] = 0.7 + Math.random() * 0.3; // B
-      
-      sizes[i] = Math.random() * 2;
-    }
-
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-    geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-    
-    return geometry;
-  }, []);
-
-  return (
-    <points ref={galaxyRef}>
-      <primitive object={galaxyGeometry} />
-      <pointsMaterial
-        size={0.1}
-        vertexColors={true}
-        transparent
-        opacity={0.8}
-        sizeAttenuation={true}
-      />
-    </points>
-  );
-};
-
-// ----------------------------------------------------
-// UI COMPONENTS (INSIDE CANVAS)
-// ----------------------------------------------------
-
-const PlanetInfoPanel: FC<{ planetData: PlanetProps | null }> = ({ planetData }) => {
-  if (!planetData) return null;
-
-  return (
-    <Html fullscreen>
-      <div className="absolute top-8 left-8 z-20 p-6 rounded-xl bg-gray-900/80 backdrop-blur-md text-white max-w-md">
-        <h2 className="text-2xl font-bold mb-4">{planetData.name}</h2>
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span>Diameter:</span>
-            <span>{(planetData.size * 2).toFixed(2)} units</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Orbital Period:</span>
-            <span>{planetData.orbitalPeriod} years</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Mass:</span>
-            <span>{(planetData.mass! / 1.989e30).toFixed(6)} M☉</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Temperature:</span>
-            <span>{planetData.temperature} K</span>
-          </div>
-          {planetData.discoveryYear && (
-            <div className="flex justify-between">
-              <span>Discovered:</span>
-              <span>{planetData.discoveryYear > 0 ? planetData.discoveryYear : `${Math.abs(planetData.discoveryYear)} BCE`}</span>
-            </div>
-          )}
-        </div>
-        <p className="mt-4 text-gray-300 text-xs">{planetData.description}</p>
-        
-        <div className="mt-4 flex space-x-2">
-          <button className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition-colors">
-            View Details
-          </button>
-          <button className="border border-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm transition-colors">
-            Compare
-          </button>
-        </div>
-      </div>
-    </Html>
-  );
-};
-
-const NavigationPanel: FC = () => {
-  const { resetCamera } = useCamera();
-  const [selectedPlanet, setSelectedPlanet] = useState<string>('Sun');
-
-  return (
-    <Html fullscreen>
-      <div className="absolute bottom-8 left-8 z-20 p-6 rounded-xl bg-gray-900/80 backdrop-blur-md text-white">
-        <h3 className="text-lg font-semibold mb-4">Navigation</h3>
-        
-        <div className="grid grid-cols-3 gap-2 mb-4">
-          {PLANET_DATA.map(planet => (
-            <button
-              key={planet.name}
-              onClick={() => setSelectedPlanet(planet.name)}
-              className={`px-3 py-2 rounded-lg text-sm transition-colors ${
-                selectedPlanet === planet.name ? 'bg-blue-600' : 'bg-gray-700 hover:bg-gray-600'
-              }`}
-            >
-              {planet.name}
-            </button>
-          ))}
-        </div>
-        
-        <div className="flex space-x-2">
-          <button 
-            onClick={resetCamera}
-            className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-sm transition-colors flex-1"
-          >
-            Reset View
-          </button>
-          <button className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-sm transition-colors flex-1">
-            Tour Mode
-          </button>
-        </div>
-      </div>
-    </Html>
-  );
-};
-
-const ControlPanel: FC = () => {
-  const [timeScale, setTimeScale] = useState(1);
-  const [showOrbits, setShowOrbits] = useState(true);
-  const [showLabels, setShowLabels] = useState(true);
-  const [graphicsQuality, setGraphicsQuality] = useState('high');
-
-  return (
-    <Html fullscreen>
-      <div className="absolute top-8 right-8 z-20 p-6 rounded-xl bg-gray-900/80 backdrop-blur-md text-white max-w-xs">
-        <h3 className="text-lg font-semibold mb-4">Controls</h3>
-        
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm mb-2">Time Scale</label>
-            <input
-              type="range"
-              min="0"
-              max="1000"
-              value={timeScale}
-              onChange={(e) => setTimeScale(Number(e.target.value))}
-              className="w-full"
-            />
-            <div className="text-xs text-gray-400 mt-1">{timeScale}x</div>
-          </div>
-          
-          <div className="space-y-2">
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={showOrbits}
-                onChange={(e) => setShowOrbits(e.target.checked)}
-                className="mr-2"
-              />
-              Show Orbits
-            </label>
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={showLabels}
-                onChange={(e) => setShowLabels(e.target.checked)}
-                className="mr-2"
-              />
-              Show Labels
-            </label>
-          </div>
-          
-          <div>
-            <label className="block text-sm mb-2">Graphics Quality</label>
-            <select
-              value={graphicsQuality}
-              onChange={(e) => setGraphicsQuality(e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm"
-            >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="ultra">Ultra</option>
-            </select>
-          </div>
-        </div>
-      </div>
-    </Html>
-  );
-};
-
-// ----------------------------------------------------
-// MAIN SCENE COMPONENTS
-// ----------------------------------------------------
-
-const AdvancedSolarSystem: FC = () => {
-  const sceneRef = useRef<THREE.Group>(null!);
-  const [selectedPlanet, setSelectedPlanet] = useState<PlanetProps | null>(null);
-  const spacecrafts = useMemo(() => [
-    { position: [20, 5, 10] as [number, number, number], targetPlanet: 'Mars', speed: 0.5, missionType: 'orbiter' as const },
-    { position: [40, -8, 25] as [number, number, number], targetPlanet: 'Jupiter', speed: 0.3, missionType: 'flyby' as const },
-    { position: [60, 12, -15] as [number, number, number], targetPlanet: 'Saturn', speed: 0.2, missionType: 'orbiter' as const },
-  ], []);
-
-  return (
-    <CameraController>
-      <group ref={sceneRef}>
-        {/* Background elements */}
-        <Galaxy />
-        <Stars radius={500} depth={100} count={20000} factor={8} saturation={0.5} fade speed={2} />
-        
-        {/* Central star */}
-        <EnhancedSun />
-        <SolarFlares />
-        
-        {/* Planets */}
-        {PLANET_DATA.filter(planet => planet.name !== 'Sun').map(planet => (
-          <EnhancedPlanet key={planet.name} planetData={planet} />
-        ))}
-        
-        {/* Spacecrafts */}
-        {spacecrafts.map((spacecraft, index) => (
-          <Spacecraft key={index} {...spacecraft} />
-        ))}
-        
-        {/* UI Components */}
-        <PlanetInfoPanel planetData={selectedPlanet} />
-        <NavigationPanel />
-        <ControlPanel />
-        
-        {/* Ambient lighting */}
-        <ambientLight intensity={0.1} />
-        <pointLight position={[0, 0, 0]} intensity={2} distance={1000} />
-      </group>
-    </CameraController>
-  );
-};
-
-const PostProcessingEffects: FC = () => {
-  return (
-    <EffectComposer>
-      <DepthOfField
-        focusDistance={0}
-        focalLength={0.02}
-        bokehScale={2}
-        height={480}
-      />
-      <Bloom
-        intensity={0.5}
-        kernelSize={KernelSize.LARGE}
-        luminanceThreshold={0.9}
-        luminanceSmoothing={0.025}
-      />
-      <ChromaticAberration
-        offset={[0.001, 0.001]}
-        radialModulation={true}
-        modulationOffset={0.5}
-      />
-      <Vignette
-        darkness={0.4}
-        offset={0.1}
-      />
-    </EffectComposer>
-  );
-};
-
-// ----------------------------------------------------
-// MAIN PAGE COMPONENT
-// ----------------------------------------------------
-
-const HomePage: FC = () => {
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate loading time
-    const timer = setTimeout(() => setIsLoading(false), 2000);
-    return () => clearTimeout(timer);
+    const timer = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(timer);
   }, []);
 
-  if (isLoading) {
-    return (
-      <div className="h-screen w-screen bg-black flex items-center justify-center">
-        <div className="text-white text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-xl">Loading Cosmic Experience...</p>
-          <p className="text-gray-400 mt-2">Initializing procedural generation</p>
-        </div>
-      </div>
+  useEffect(() => {
+    const handleClick = () => setMenu(null);
+    window.addEventListener("click", handleClick);
+    return () => window.removeEventListener("click", handleClick);
+  }, []);
+
+  useEffect(() => {
+    const handleKey = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.code === "Space") {
+        event.preventDefault();
+        setSpotlightOpen((prev) => !prev);
+      }
+      if (event.key === "Escape") {
+        setSpotlightOpen(false);
+        setControlCenterOpen(false);
+        setNotificationOpen(false);
+        setWidgetEditOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, []);
+
+  useEffect(() => {
+    if (!desktopRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const rect = entry.contentRect;
+        setDesktopSize({ width: rect.width, height: rect.height });
+      }
+    });
+    observer.observe(desktopRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  const timeLabel = useMemo(() => {
+    return now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }, [now]);
+
+  const dateLabel = useMemo(() => {
+    return now.toLocaleDateString([], {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    });
+  }, [now]);
+
+  const getWindowSize = (id: string) =>
+    windowSizeState[id] ?? windowSizes[id] ?? { width: 520, height: 340 };
+
+  const clampPosition = (id: string, x: number, y: number) => {
+    const size = getWindowSize(id);
+    if (!desktopSize.width || !desktopSize.height) return { x, y };
+    const width = Math.min(size.width, desktopSize.width - 32);
+    const height = Math.min(size.height, desktopSize.height - 32);
+    const maxX = desktopSize.width - width - 16;
+    const maxY = desktopSize.height - height - 16;
+    return {
+      x: Math.min(Math.max(x, 16), Math.max(maxX, 16)),
+      y: Math.min(Math.max(y, 24), Math.max(maxY, 24)),
+    };
+  };
+
+  const openApp = (id: string) => {
+    setOpenApps((prev) => (prev.includes(id) ? prev : [...prev, id]));
+    setMinimizedApps((prev) => prev.filter((app) => app !== id));
+    setActiveApp(id);
+    setOpeningId(id);
+    setTimeout(() => setOpeningId(""), 280);
+    setPositions((prev) => {
+      if (prev[id]) return prev;
+      const fallback = defaultWindowPositions[Object.keys(prev).length % defaultWindowPositions.length];
+      const size = getWindowSize(id);
+      const baseX = desktopSize.width
+        ? (desktopSize.width - size.width) / 2 + 40
+        : fallback.x;
+      const baseY = desktopSize.height
+        ? (desktopSize.height - size.height) / 2 - 20
+        : fallback.y;
+      const clamped = clampPosition(id, baseX, baseY);
+      return { ...prev, [id]: clamped };
+    });
+  };
+
+  const closeApp = (id: string) => {
+    setOpenApps((prev) => prev.filter((app) => app !== id));
+    setMinimizedApps((prev) => prev.filter((app) => app !== id));
+    setMaximizedApps((prev) => prev.filter((app) => app !== id));
+    setActiveApp((prev) => (prev === id ? "" : prev));
+  };
+
+  const minimizeApp = (id: string) => {
+    setMinimizingId(id);
+    setTimeout(() => setMinimizingId(""), 220);
+    setMinimizedApps((prev) => (prev.includes(id) ? prev : [...prev, id]));
+    setActiveApp((prev) => (prev === id ? "" : prev));
+  };
+
+  const toggleMaximize = (id: string) => {
+    setMaximizedApps((prev) =>
+      prev.includes(id) ? prev.filter((app) => app !== id) : [...prev, id]
     );
-  }
+    setActiveApp(id);
+  };
+
+  const bringToFront = (id: string) => {
+    setOpenApps((prev) => {
+      const filtered = prev.filter((app) => app !== id);
+      return [...filtered, id];
+    });
+    setActiveApp(id);
+    setMinimizedApps((prev) => prev.filter((app) => app !== id));
+  };
+
+  const handleContextMenu = (event: React.MouseEvent) => {
+    event.preventDefault();
+    setMenu({ x: event.clientX, y: event.clientY });
+  };
+
+  const handleSafariSearch = (event: React.FormEvent) => {
+    event.preventDefault();
+    const raw = safariQuery.trim();
+    if (!raw) return;
+    const hasProtocol = /^https?:\/\//i.test(raw);
+    const isLikelyDomain = raw.includes(".") && !raw.includes(" ");
+    const target = hasProtocol
+      ? raw
+      : isLikelyDomain
+        ? `https://${raw}`
+        : `https://www.google.com/search?q=${encodeURIComponent(raw)}`;
+    window.open(target, "_blank", "noopener,noreferrer");
+  };
+
+  useEffect(() => {
+    if (!dragging) return;
+    const handleMove = (event: MouseEvent) => {
+      const size = getWindowSize(dragging.id);
+      if (!desktopRef.current) return;
+      const desktopBounds = desktopRef.current.getBoundingClientRect();
+      const width = Math.min(size.width, desktopBounds.width - 32);
+      const height = Math.min(size.height, desktopBounds.height - 32);
+      const nextX = event.clientX - desktopBounds.left - dragging.offsetX;
+      const nextY = event.clientY - desktopBounds.top - dragging.offsetY;
+      const maxX = desktopBounds.width - width - 16;
+      const maxY = desktopBounds.height - height - 16;
+      const clampedX = Math.min(Math.max(nextX, 16), Math.max(maxX, 16));
+      const clampedY = Math.min(Math.max(nextY, 24), Math.max(maxY, 24));
+      setPositions((prev) => ({
+        ...prev,
+        [dragging.id]: { x: clampedX, y: clampedY },
+      }));
+    };
+    const handleUp = () => {
+      if (!desktopRef.current || !dragging) {
+        setDragging(null);
+        return;
+      }
+      const bounds = desktopRef.current.getBoundingClientRect();
+      const size = getWindowSize(dragging.id);
+      const pos = positions[dragging.id];
+      if (pos) {
+        const snapMargin = 24;
+        if (pos.y <= snapMargin) {
+          toggleMaximize(dragging.id);
+        } else if (pos.x <= snapMargin) {
+          const halfWidth = bounds.width / 2 - 24;
+          setWindowSizeState((prev) => ({
+            ...prev,
+            [dragging.id]: { width: halfWidth, height: size.height },
+          }));
+          setPositions((prev) => ({ ...prev, [dragging.id]: { x: 16, y: 24 } }));
+        } else if (pos.x + size.width >= bounds.width - snapMargin) {
+          const halfWidth = bounds.width / 2 - 24;
+          setWindowSizeState((prev) => ({
+            ...prev,
+            [dragging.id]: { width: halfWidth, height: size.height },
+          }));
+          setPositions((prev) => ({
+            ...prev,
+            [dragging.id]: { x: bounds.width / 2 + 8, y: 24 },
+          }));
+        }
+      }
+      setDragging(null);
+    };
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", handleUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", handleUp);
+    };
+  }, [dragging]);
+
+  useEffect(() => {
+    if (!desktopSize.width || !desktopSize.height) return;
+    setPositions((prev) => {
+      const next: Record<string, { x: number; y: number }> = { ...prev };
+      Object.entries(prev).forEach(([id, pos]) => {
+        next[id] = clampPosition(id, pos.x, pos.y);
+      });
+      return next;
+    });
+  }, [desktopSize.width, desktopSize.height]);
 
   return (
-    <main className="h-screen w-screen relative bg-black overflow-hidden">
-      {/* 3D Canvas */}
-      <Canvas
-        camera={{ 
-          position: [0, 50, 80], 
-          fov: 45,
-          near: 0.1,
-          far: 2000
-        }}
-        gl={{
-          antialias: true,
-          alpha: false,
-          powerPreference: "high-performance"
-        }}
-        shadows
-      >
-        <Suspense fallback={null}>
-          <AdvancedSolarSystem />
-          <PostProcessingEffects />
-          
-          <OrbitControls
-            enableZoom={true}
-            enablePan={true}
-            enableRotate={true}
-            minDistance={5}
-            maxDistance={500}
-            target={[0, 0, 0]}
-          />
-        </Suspense>
-      </Canvas>
+    <main className="os" onContextMenu={handleContextMenu}>
+      <header className="os__menubar">
+        <div className="menubar__left">
+          <span className="menubar__logo"></span>
+          <nav className="menubar__nav">
+            <button type="button" onClick={() => openApp("finder")}>Finder</button>
+            <button type="button">File</button>
+            <button type="button">Edit</button>
+            <button type="button">View</button>
+            <button type="button">Go</button>
+            <button type="button">Window</button>
+            <button type="button">Help</button>
+          </nav>
+        </div>
+        <div className="menubar__right">
+          <div className="menubar__icons">
+            <button type="button" onClick={() => setControlCenterOpen((prev) => !prev)}>
+              <img src="/icons/menubar-wifi.svg" alt="Wi-Fi" />
+            </button>
+            <button type="button">
+              <img src="/icons/menubar-battery.svg" alt="Battery" />
+            </button>
+            <button type="button" onClick={() => setSpotlightOpen((prev) => !prev)}>
+              <img src="/icons/menubar-search.svg" alt="Search" />
+            </button>
+            <button type="button">
+              <img src="/icons/menubar-siri.svg" alt="Siri" />
+            </button>
+            <button type="button" onClick={() => setControlCenterOpen((prev) => !prev)}>
+              <img src="/icons/menubar-control.svg" alt="Control Center" />
+            </button>
+          </div>
+          <button type="button" className="menubar__clock" onClick={() => setNotificationOpen((prev) => !prev)}>
+            {dateLabel} {timeLabel}
+          </button>
+        </div>
+      </header>
 
-      {/* Static UI Overlay */}
-      <div className="absolute inset-0 pointer-events-none">
-        {/* Main Title */}
-        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 p-8 text-white text-center pointer-events-none">
-          <h1 className="text-6xl font-light tracking-wider mb-2 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-            INTERSTELLAR EXPLORER
-          </h1>
-          <p className="text-lg text-gray-300">
-            Advanced 3D Solar System Simulation • Procedural Generation • Real-time Physics
-          </p>
+      <section className="os__desktop" ref={desktopRef}>
+        <div className="desktop__widgets">
+          {widgets
+            .filter((widget) => widgetVisibility[widget.id])
+            .map((widget) => (
+              <div key={widget.id} className={`widget widget--compact widget--${widget.id}`}>
+                <div className="widget__header">
+                  <h3>{widget.title}</h3>
+                  <span>{widget.body}</span>
+                </div>
+                <div className="widget__meta">
+                  {widget.meta.map((item) => (
+                    <span key={item}>{item}</span>
+                  ))}
+                </div>
+              </div>
+            ))}
         </div>
 
-        {/* Status Bar */}
-        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 p-4 text-white text-sm bg-black/50 rounded-t-lg pointer-events-none">
-          <div className="flex space-x-6">
-            <span>🛰️ 3 Active Spacecraft</span>
-            <span>⭐ 8 Planets + 200+ Moons</span>
-            <span>🎯 Procedural Textures</span>
-            <span>🌌 20,000+ Stars Rendered</span>
+        <div className="desktop__windows">
+          {openApps.map((id, index) => {
+            const content = appContent[id] ?? {
+              title: id,
+              body: "",
+            };
+            const isMinimized = minimizedApps.includes(id);
+            const isMaximized = maximizedApps.includes(id);
+            const position = positions[id] ?? defaultWindowPositions[index % defaultWindowPositions.length];
+            const baseSize = getWindowSize(id);
+            const size = desktopSize.width
+              ? {
+                  width: Math.min(baseSize.width, desktopSize.width - 32),
+                  height: Math.min(baseSize.height, desktopSize.height - 32),
+                }
+              : baseSize;
+            const style: React.CSSProperties = isMaximized
+              ? { inset: "6rem 2rem 6rem 2rem" }
+              : { left: position.x, top: position.y, width: size.width, height: size.height };
+
+            return (
+              <section
+                key={id}
+                className={`window window--floating ${
+                  isMinimized ? "window--hidden" : ""
+                } ${isMaximized ? "window--max" : ""} ${
+                  activeApp === id ? "window--active" : ""
+                } ${openingId === id ? "window--opening" : ""} ${
+                  minimizingId === id ? "window--minimizing" : ""
+                }`}
+                style={{ ...style, zIndex: 10 + index }}
+                onMouseDown={() => bringToFront(id)}
+              >
+                <div
+                  className="window__bar"
+                  onMouseDown={(event) => {
+                    if ((event.target as HTMLElement).closest("button")) return;
+                    if (isMaximized) return;
+                    const rect = (event.currentTarget as HTMLDivElement).getBoundingClientRect();
+                    setDragging({
+                      id,
+                      offsetX: event.clientX - rect.left,
+                      offsetY: event.clientY - rect.top,
+                    });
+                  }}
+                >
+                  <button
+                    className="window__dot window__dot--close"
+                    type="button"
+                    onMouseDown={(event) => event.stopPropagation()}
+                    onClick={() => closeApp(id)}
+                    aria-label={`Close ${content.title}`}
+                  />
+                  <button
+                    className="window__dot window__dot--min"
+                    type="button"
+                    onMouseDown={(event) => event.stopPropagation()}
+                    onClick={() => minimizeApp(id)}
+                    aria-label={`Minimize ${content.title}`}
+                  />
+                  <button
+                    className="window__dot window__dot--max"
+                    type="button"
+                    onMouseDown={(event) => event.stopPropagation()}
+                    onClick={() => toggleMaximize(id)}
+                    aria-label={`Maximize ${content.title}`}
+                  />
+                  {id !== "safari" ? (
+                    <span className="window__title">{content.title}</span>
+                  ) : null}
+                </div>
+                <div className="window__body">
+                  {id !== "safari" ? (
+                    <>
+                      {content.subtitle ? (
+                        <p className="window__eyebrow">{content.subtitle}</p>
+                      ) : null}
+                      <h2>{content.title}</h2>
+                    </>
+                  ) : null}
+                  {id === "apps" ? (
+                    <div className="launchpad">
+                      <div className="launchpad__toolbar">
+                        <span>Applications</span>
+                        <input type="text" placeholder="Search apps" aria-label="Search apps" />
+                      </div>
+                      <div className="launchpad__tabs">
+                        {[
+                          "Productivity",
+                          "Utilities",
+                          "Social",
+                          "Entertainment",
+                          "Creativity",
+                          "Other",
+                        ].map((tab) => (
+                          <button key={tab} type="button">
+                            {tab}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="launchpad__grid">
+                        {launchpadApps.map((app) => (
+                          <button
+                            key={app.id}
+                            type="button"
+                            className="launchpad__app"
+                            onClick={() => openApp(app.id)}
+                          >
+                            <span className="launchpad__icon">
+                              <img src={app.icon} alt="" aria-hidden="true" />
+                            </span>
+                            <span className="launchpad__label">{app.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : id === "finder" ? (
+                    <div className="finder">
+                      <aside className="finder__sidebar">
+                        <h4>Favorites</h4>
+                        <ul>
+                          <li>Recents</li>
+                          <li>Applications</li>
+                          <li>Desktop</li>
+                          <li>Documents</li>
+                          <li>Downloads</li>
+                        </ul>
+                        <h4>Locations</h4>
+                        <ul>
+                          <li>Macintosh HD</li>
+                          <li>Network</li>
+                        </ul>
+                      </aside>
+                      <div className="finder__content">
+                        <div className="finder__toolbar">
+                          <span>Desktop</span>
+                          <span>Grid View</span>
+                        </div>
+                        <div className="finder__grid">
+                          {["CityTalk", "Projects", "Studio", "OS Gallery", "Briefs"].map((item) => (
+                            <div key={item} className="finder__item">
+                              <span className="finder__icon" />
+                              <span>{item}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ) : id === "calendar" ? (
+                    <div className="calendar">
+                      <div className="calendar__header">
+                        <span>February 2026</span>
+                        <span>Sun 8</span>
+                      </div>
+                      <div className="calendar__grid">
+                        {Array.from({ length: 28 }, (_, idx) => (
+                          <span key={idx} className={idx === 7 ? "active" : ""}>{idx + 1}</span>
+                        ))}
+                      </div>
+                    </div>
+                  ) : id === "notes" ? (
+                    <div className="notes">
+                      <h4>Studio Notes</h4>
+                      <ul>
+                        <li>Finalize OS demo deck</li>
+                        <li>Prep CityTalk live event flow</li>
+                        <li>Review launchpad layout</li>
+                      </ul>
+                    </div>
+                  ) : id === "music" ? (
+                    <div className="music">
+                      <div className="music__album" />
+                      <div>
+                        <h4>Ambient Cityscapes</h4>
+                        <p>Now Playing · 2:14 / 4:32</p>
+                      </div>
+                      <div className="music__controls">
+                        <button type="button">◄◄</button>
+                        <button type="button">▶</button>
+                        <button type="button">►►</button>
+                      </div>
+                    </div>
+                  ) : id === "terminal" ? (
+                    <div className="terminal">
+                      <p>$ deploy citytalk --env=prod</p>
+                      <p>✔ build complete</p>
+                      <p>✔ realtime services online</p>
+                      <p>$</p>
+                    </div>
+                  ) : id === "safari" ? (
+                    <div className="safari">
+                      <div className="safari__scroll">
+                      <div className="safari__top">
+                        <div className="safari__nav">
+                          <button type="button" aria-label="Back">◀</button>
+                          <button type="button" aria-label="Forward">▶</button>
+                          <button type="button" aria-label="Reload">⟳</button>
+                        </div>
+                        <form className="safari__search" onSubmit={handleSafariSearch}>
+                          <input
+                            type="text"
+                            value={safariQuery}
+                            onChange={(event) => setSafariQuery(event.target.value)}
+                            placeholder="Search or enter website name"
+                            aria-label="Search or enter website name"
+                          />
+                        </form>
+                        <div className="safari__actions">
+                          <button type="button" aria-label="Share">⤴</button>
+                          <button type="button" aria-label="Tabs">▢</button>
+                        </div>
+                      </div>
+
+                      <div className="safari__start-card">
+                        <div className="safari__card-icon">Start Page</div>
+                        <div>
+                          <h3>Start Page</h3>
+                          <p>Customize your wallpaper and sections that appear when creating new tabs.</p>
+                        </div>
+                        <button type="button">Customize Start Page</button>
+                      </div>
+
+                      <div className="safari__section">
+                        <h4>Favourites</h4>
+                        <div className="safari__favorites">
+                          {safariFavorites.map((site) => (
+                            <a key={site.url} href={`https://${site.url}`} target="_blank" rel="noreferrer">
+                              <span className="safari__fav">
+                                <img src={site.icon} alt="" aria-hidden="true" />
+                              </span>
+                              <span>{site.name}</span>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="safari__section">
+                        <h4>Privacy Report</h4>
+                        <div className="safari__privacy">
+                          <div>
+                            <strong>Last 30 days</strong>
+                            <p>Trackers prevented from profiling you: 164</p>
+                          </div>
+                          <div>
+                            <strong>Websites that contacted trackers</strong>
+                            <p>Top: news, social, and analytics.</p>
+                          </div>
+                        </div>
+                      </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <p>{content.body}</p>
+                  )}
+                </div>
+                {!isMaximized ? (
+                  <button
+                    type="button"
+                    className="window__resize"
+                    onMouseDown={(event) => {
+                      event.stopPropagation();
+                      const startX = event.clientX;
+                      const startY = event.clientY;
+                      const base = positions[id] ?? { x: 0, y: 0 };
+                      const baseSize = getWindowSize(id);
+                      const handleMove = (moveEvent: MouseEvent) => {
+                        const deltaX = moveEvent.clientX - startX;
+                        const deltaY = moveEvent.clientY - startY;
+                        const nextSize = {
+                          width: Math.max(360, baseSize.width + deltaX),
+                          height: Math.max(260, baseSize.height + deltaY),
+                        };
+                        setWindowSizeState((prev) => ({ ...prev, [id]: nextSize }));
+                        setPositions((prev) => ({
+                          ...prev,
+                          [id]: clampPosition(id, base.x, base.y),
+                        }));
+                      };
+                      const handleUp = () => {
+                        window.removeEventListener("mousemove", handleMove);
+                        window.removeEventListener("mouseup", handleUp);
+                      };
+                      window.addEventListener("mousemove", handleMove);
+                      window.addEventListener("mouseup", handleUp);
+                    }}
+                  />
+                ) : null}
+              </section>
+            );
+          })}
+        </div>
+      </section>
+
+      {menu ? (
+        <div className="context-menu" style={{ left: menu.x, top: menu.y }}>
+          <button type="button" onClick={() => openApp("finder")}>Open Finder</button>
+          <button type="button" onClick={() => openApp("projects")}>Open Projects</button>
+          <button type="button" onClick={() => openApp("settings")}>Settings</button>
+          <button type="button">Change Wallpaper</button>
+          <button type="button" onClick={() => setWidgetEditOpen(true)}>Edit Widgets</button>
+        </div>
+      ) : null}
+
+      {spotlightOpen ? (
+        <div className="spotlight" onClick={() => setSpotlightOpen(false)}>
+          <div className="spotlight__panel" onClick={(event) => event.stopPropagation()}>
+            <input type="text" placeholder="Search apps, files, and web..." />
+            <div className="spotlight__results">
+              {dockApps.slice(0, 6).map((app) => (
+                <button key={app.id} type="button" onClick={() => openApp(app.id)}>
+                  <img src={app.icon} alt="" />
+                  <span>{app.name}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
+      ) : null}
+
+      {controlCenterOpen ? (
+        <div className="control-center">
+          <div className="control-center__grid">
+            <div>
+              <strong>Wi‑Fi</strong>
+              <p>Connected</p>
+            </div>
+            <div>
+              <strong>Bluetooth</strong>
+              <p>On</p>
+            </div>
+            <div>
+              <strong>Focus</strong>
+              <p>Off</p>
+            </div>
+            <div>
+              <strong>Display</strong>
+              <p>Auto</p>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {notificationOpen ? (
+        <aside className="notification-center">
+          <h4>Notifications</h4>
+          <div className="notification-center__card">
+            <strong>Codex</strong>
+            <p>Notifications may include alerts, sounds and icon badges.</p>
+          </div>
+          <h4>Calendar</h4>
+          <div className="notification-center__card">
+            <strong>Tue</strong>
+            <p>CityTalk demo · 11:00 AM</p>
+          </div>
+        </aside>
+      ) : null}
+
+      {widgetEditOpen ? (
+        <div className="widget-gallery" onClick={() => setWidgetEditOpen(false)}>
+          <div className="widget-gallery__panel" onClick={(event) => event.stopPropagation()}>
+            <h3>Edit Widgets</h3>
+            <div className="widget-gallery__list">
+              {widgets.map((widget) => (
+                <label key={widget.id}>
+                  <input
+                    type="checkbox"
+                    checked={widgetVisibility[widget.id]}
+                    onChange={() =>
+                      setWidgetVisibility((prev) => ({
+                        ...prev,
+                        [widget.id]: !prev[widget.id],
+                      }))
+                    }
+                  />
+                  <span>{widget.title}</span>
+                </label>
+              ))}
+            </div>
+            <button type="button" onClick={() => setWidgetEditOpen(false)}>Done</button>
+          </div>
+        </div>
+      ) : null}
+
+      <div className="os__dock" role="navigation" aria-label="App dock">
+        {dockApps.map((item) => (
+          <button
+            className="dock__app"
+            type="button"
+            key={item.id}
+            onClick={() => openApp(item.id)}
+            aria-label={item.name}
+          >
+            <span className="dock__icon">
+              <img src={item.icon} alt="" aria-hidden="true" />
+            </span>
+            <span className={openApps.includes(item.id) ? "dock__dot dock__dot--active" : "dock__dot"} />
+          </button>
+        ))}
       </div>
     </main>
   );
-};
-
-export default HomePage;
+}
