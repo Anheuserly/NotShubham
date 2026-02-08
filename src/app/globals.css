@@ -128,6 +128,23 @@ body {
   opacity: 0.9;
 }
 
+.menubar__icons button {
+  background: transparent;
+  border: none;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.menubar__clock {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
 .os__desktop {
   display: grid;
   grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
@@ -184,6 +201,7 @@ body {
   overflow: hidden;
   backdrop-filter: blur(16px);
   animation: windowIn 0.8s ease both;
+  position: relative;
 }
 
 .window__bar {
@@ -285,12 +303,41 @@ body {
   animation: windowOpen 0.28s ease-out both;
 }
 
+.window--minimizing {
+  animation: windowMin 0.22s ease-in both;
+}
+
 .window__body {
   padding: 1.8rem 2rem 2rem;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
   height: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.window__resize {
+  position: absolute;
+  bottom: 10px;
+  right: 12px;
+  width: 18px;
+  height: 18px;
+  background: transparent;
+  border: none;
+  cursor: nwse-resize;
+}
+
+.window__resize::after {
+  content: "";
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 12px;
+  height: 12px;
+  border-right: 2px solid rgba(255, 255, 255, 0.3);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
 }
 
 .window__eyebrow {
@@ -446,6 +493,17 @@ body {
   padding: 1rem 1.1rem;
 }
 
+.widget__header {
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.9rem;
+}
+
+.widget__header span {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
 .widget__meta {
   display: grid;
   gap: 0.25rem;
@@ -536,6 +594,26 @@ body {
 .dock__app:hover::after {
   opacity: 1;
   transform: translateX(-50%) translateY(-4px);
+}
+
+.dock__app:hover .dock__icon {
+  transform: scale(1.15) translateY(-6px);
+}
+
+.dock__icon {
+  transition: transform 0.2s ease;
+}
+
+.dock__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: transparent;
+  margin-top: 2px;
+}
+
+.dock__dot--active {
+  background: rgba(255, 255, 255, 0.7);
 }
 
 .context-menu {
@@ -660,6 +738,7 @@ body {
   padding-right: 0.25rem;
   flex: 1;
   min-height: 0;
+  max-height: 100%;
 }
 
 .safari__top {
@@ -799,6 +878,326 @@ body {
   color: var(--muted);
 }
 
+.finder {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 1rem;
+}
+
+.finder__sidebar {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 14px;
+  padding: 0.8rem;
+  display: grid;
+  gap: 0.6rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.finder__sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.finder__content {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.finder__toolbar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.8rem;
+  align-items: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.finder__nav,
+.finder__actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.finder__nav button,
+.finder__actions button {
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: var(--foreground);
+  border-radius: 8px;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.75rem;
+}
+
+.finder__path {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: center;
+}
+
+.finder__path span {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+}
+
+.finder__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.8rem;
+}
+
+.finder__item {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 0.6rem;
+  display: grid;
+  gap: 0.3rem;
+  align-items: center;
+}
+
+.finder__icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(111, 231, 255, 0.3);
+  margin-bottom: 0.3rem;
+}
+
+.finder__item strong {
+  display: block;
+  font-size: 0.85rem;
+}
+
+.finder__item span {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.finder__preview {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  padding: 0.7rem;
+}
+
+.finder__preview-card {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  gap: 0.8rem;
+  align-items: center;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.finder__preview-thumb {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.calendar {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.calendar__header {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+}
+
+.calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.4rem;
+}
+
+.calendar__grid span {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 0.4rem;
+  text-align: center;
+  font-size: 0.8rem;
+}
+
+.calendar__grid .active {
+  background: rgba(111, 231, 255, 0.3);
+}
+
+.notes {
+  display: grid;
+  gap: 0.6rem;
+  color: var(--muted);
+}
+
+.notes ul {
+  padding-left: 1.1rem;
+}
+
+.music {
+  display: grid;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.music__album {
+  width: 120px;
+  height: 120px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(255, 180, 84, 0.6), rgba(111, 231, 255, 0.6));
+}
+
+.music__controls {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.music__controls button {
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: var(--foreground);
+  border-radius: 10px;
+  padding: 0.4rem 0.6rem;
+}
+
+.terminal {
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 12px;
+  padding: 0.8rem;
+  font-family: var(--font-mono);
+  color: #6fe7ff;
+}
+
+.spotlight {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: grid;
+  place-items: start center;
+  padding-top: 8rem;
+  z-index: 50;
+}
+
+.spotlight__panel {
+  width: min(560px, 90vw);
+  background: rgba(20, 22, 32, 0.9);
+  border-radius: 16px;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: grid;
+  gap: 0.8rem;
+  backdrop-filter: blur(16px);
+}
+
+.spotlight__panel input {
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  border-radius: 10px;
+  padding: 0.7rem 1rem;
+  color: var(--foreground);
+}
+
+.spotlight__results {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.6rem;
+}
+
+.spotlight__results button {
+  background: rgba(255, 255, 255, 0.06);
+  border: none;
+  color: var(--foreground);
+  padding: 0.5rem;
+  border-radius: 10px;
+  display: grid;
+  gap: 0.3rem;
+  justify-items: center;
+}
+
+.spotlight__results img {
+  width: 28px;
+  height: 28px;
+}
+
+.control-center {
+  position: fixed;
+  top: 2.4rem;
+  right: 1rem;
+  background: rgba(20, 22, 32, 0.9);
+  border-radius: 16px;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(16px);
+  z-index: 40;
+  min-width: 220px;
+}
+
+.control-center__grid {
+  display: grid;
+  gap: 0.6rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.notification-center {
+  position: fixed;
+  top: 2.4rem;
+  right: 1rem;
+  width: 280px;
+  background: rgba(20, 22, 32, 0.9);
+  border-radius: 16px;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(16px);
+  z-index: 40;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.notification-center__card {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 0.7rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.widget-gallery {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: grid;
+  place-items: center;
+  z-index: 60;
+}
+
+.widget-gallery__panel {
+  width: min(420px, 90vw);
+  background: rgba(20, 22, 32, 0.92);
+  border-radius: 16px;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: grid;
+  gap: 0.8rem;
+}
+
+.widget-gallery__list {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.widget-gallery__list label {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  color: var(--foreground);
+}
+
 @keyframes windowIn {
   from {
     opacity: 0;
@@ -818,6 +1217,17 @@ body {
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes windowMin {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.8) translateY(40px);
   }
 }
 

@@ -249,6 +249,7 @@ export default function Home() {
   const [controlCenterOpen, setControlCenterOpen] = useState<boolean>(false);
   const [notificationOpen, setNotificationOpen] = useState<boolean>(false);
   const [widgetEditOpen, setWidgetEditOpen] = useState<boolean>(false);
+  const [launchpadPage, setLaunchpadPage] = useState<number>(0);
   const [widgetVisibility, setWidgetVisibility] = useState<Record<string, boolean>>(
     () =>
       widgets.reduce((acc, widget) => {
@@ -272,6 +273,15 @@ export default function Home() {
       return true;
     });
   }, []);
+
+  const launchpadPages = useMemo(() => {
+    const pageSize = 12;
+    const pages: typeof launchpadApps[] = [];
+    for (let i = 0; i < launchpadApps.length; i += pageSize) {
+      pages.push(launchpadApps.slice(i, i + pageSize));
+    }
+    return pages;
+  }, [launchpadApps]);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
@@ -641,7 +651,7 @@ export default function Home() {
                         ))}
                       </div>
                       <div className="launchpad__grid">
-                        {launchpadApps.map((app) => (
+                        {(launchpadPages[launchpadPage] ?? []).map((app) => (
                           <button
                             key={app.id}
                             type="button"
@@ -653,6 +663,16 @@ export default function Home() {
                             </span>
                             <span className="launchpad__label">{app.name}</span>
                           </button>
+                        ))}
+                      </div>
+                      <div className="launchpad__dots">
+                        {launchpadPages.map((_, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            className={idx === launchpadPage ? "active" : ""}
+                            onClick={() => setLaunchpadPage(idx)}
+                          />
                         ))}
                       </div>
                     </div>
@@ -667,6 +687,11 @@ export default function Home() {
                           <li>Documents</li>
                           <li>Downloads</li>
                         </ul>
+                        <h4>iCloud</h4>
+                        <ul>
+                          <li>iCloud Drive</li>
+                          <li>Shared</li>
+                        </ul>
                         <h4>Locations</h4>
                         <ul>
                           <li>Macintosh HD</li>
@@ -675,16 +700,47 @@ export default function Home() {
                       </aside>
                       <div className="finder__content">
                         <div className="finder__toolbar">
-                          <span>Desktop</span>
-                          <span>Grid View</span>
+                          <div className="finder__nav">
+                            <button type="button">◀</button>
+                            <button type="button">▶</button>
+                            <button type="button">⟳</button>
+                          </div>
+                          <div className="finder__path">
+                            <span>Desktop</span>
+                            <span>Notshubham</span>
+                          </div>
+                          <div className="finder__actions">
+                            <button type="button">Grid</button>
+                            <button type="button">List</button>
+                            <button type="button">Search</button>
+                          </div>
                         </div>
                         <div className="finder__grid">
-                          {["CityTalk", "Projects", "Studio", "OS Gallery", "Briefs"].map((item) => (
-                            <div key={item} className="finder__item">
+                          {[
+                            { name: "CityTalk", type: "Folder", size: "2.1 GB" },
+                            { name: "Projects", type: "Folder", size: "1.2 GB" },
+                            { name: "Studio", type: "Folder", size: "640 MB" },
+                            { name: "OS Gallery", type: "Folder", size: "980 MB" },
+                            { name: "Briefs", type: "Folder", size: "128 MB" },
+                          ].map((item) => (
+                            <div key={item.name} className="finder__item">
                               <span className="finder__icon" />
-                              <span>{item}</span>
+                              <div>
+                                <strong>{item.name}</strong>
+                                <span>{item.type} · {item.size}</span>
+                              </div>
                             </div>
                           ))}
+                        </div>
+                        <div className="finder__preview">
+                          <div className="finder__preview-card">
+                            <div className="finder__preview-thumb" />
+                            <div>
+                              <strong>CityTalk</strong>
+                              <p>Realtime city world build</p>
+                              <p>Last opened: Today</p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
